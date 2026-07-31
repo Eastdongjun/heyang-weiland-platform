@@ -25,7 +25,7 @@ public class AuthController {
     @PostMapping("/sms-code")
     public Result<Void> sendSmsCode(@RequestParam String phone) {
         userService.sendSmsCode(phone);
-        return Result.ok("验证码已发送");
+        return Result.ok();
     }
 
     @Operation(summary = "手机号验证码登录")

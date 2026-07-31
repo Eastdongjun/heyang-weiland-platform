@@ -12,7 +12,8 @@ import com.hwsmp.user.model.entity.User;
 import com.hwsmp.user.model.vo.LoginVO;
 import com.hwsmp.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +23,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * 用户服务实现
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     private final StringRedisTemplate redisTemplate;
     private static final String SMS_CODE_PREFIX = "sms:code:";
