@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg-deep: #0A1628;
+  --bg: #0A1628;
+  --bg2: #0D1B3E;
+  --header: #0A1628;
+  --card: #0F1E37;
+  --card-light: #1A2D4A;
+  --bg-card: rgba(15, 30, 55, 0.85);
+  --bg-card2: rgba(10, 28, 60, 0.6);
+  --border: rgba(0, 191, 255, 0.15);
+  --border-bright: rgba(0, 191, 255, 0.3);
+  --accent: #00BFFF;
+  --accent-dim: rgba(0, 191, 255, 0.6);
+  --accent-glow: rgba(0, 191, 255, 0.25);
+  --cyan: #00E5CC;
+  --text: #FFFFFF;
+  --text2: #CCCCCC;
+  --text3: #8899AA;
+  --danger: #FF3366;
+  --danger-glow: rgba(255, 51, 102, 0.3);
+  --warn: #FFCC00;
+  --green: #00CC99;
+  --input-bg: rgba(10, 28, 60, 0.6);
+  --font-num: "DIN Pro", "SF Mono", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  overflow: hidden;
+}
+
+/* ===== PARTICLE CANVAS ===== */
+#particle-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== LAYOUT ===== */
+.login-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.login-container {
+  display: flex;
+  width: 960px;
+  max-width: 100%;
+  height: 540px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,191,255,0.08);
+  overflow: hidden;
+}
+
+/* ===== LEFT BRAND PANEL ===== */
+.brand-panel {
+  width: 420px;
+  background: linear-gradient(160deg, #0A1628 0%, #0F1E37 60%, #152542 100%);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-panel::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,191,255,0.12) 0%, transparent 70%);
+}
+
+.brand-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,191,255,0.10) 0%, transparent 70%);
+}
+
+.brand-logo {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  color: var(--bg);
+  font-weight: 800;
+  margin-bottom: 24px;
+  box-shadow: 0 0 30px rgba(0,191,255,0.25);
+  position: relative;
+  z-index: 2;
+}
+
+.brand-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.brand-subtitle {
+  font-size: 14px;
+  color: var(--text2);
+  letter-spacing: 1px;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.brand-divider {
+  width: 40px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  margin-bottom: 40px;
+  opacity: 0.6;
+  position: relative;
+  z-index: 2;
+}
+
+.brand-desc {
+  font-size: 13px;
+  color: var(--text3);
+  line-height: 1.8;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.brand-desc span {
+  display: inline-block;
+  margin: 0 6px;
+  color: var(--accent-dim);
+}
+
+/* ===== RIGHT FORM PANEL ===== */
+.form-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 56px;
+  position: relative;
+}
+
+.form-header {
+  margin-bottom: 32px;
+}
+
+.form-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.form-header p {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+/* Input groups */
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 16px;
+  color: var(--text3);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.input-field {
+  width: 100%;
+  height: 46px;
+  padding: 0 16px 0 42px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  transition: all 0.25s;
+  font-family: inherit;
+}
+
+.input-field::placeholder {
+  color: var(--text3);
+  font-size: 14px;
+}
+
+.input-field:hover {
+  border-color: rgba(0, 191, 255, 0.3);
+}
+
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: rgba(10, 28, 60, 0.8);
+}
+
+/* Options row */
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  font-size: 13px;
+}
+
+.remember-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  user-select: none;
+}
+
+.remember-box input[type="checkbox"] {
+  appearance: none;
+  width: 16px; height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--input-bg);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.remember-box input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.remember-box input[type="checkbox"]:checked::after {
+  content: '\2714';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.forgot-link {
+  color: var(--text3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.forgot-link:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Login button */
+.btn-login {
+  width: 100%;
+  height: 48px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  color: var(--bg);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.25s;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-login:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 191, 255, 0.3);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+}
+
+.btn-login::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.5s;
+}
+
+.btn-login:hover::after {
+  left: 100%;
+}
+
+/* Error tip */
+.error-tip {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--danger);
+  text-align: center;
+  min-height: 20px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.error-tip.show { opacity: 1; }
+
+/* Footer */
+.form-footer {
+  position: absolute;
+  bottom: 28px;
+  left: 56px; right: 56px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 860px) {
+  .login-container {
+    flex-direction: column;
+    height: auto;
+    width: 100%;
+    max-width: 420px;
+  }
+  .brand-panel {
+    width: 100%;
+    padding: 36px 32px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-title { font-size: 22px; }
+  .form-panel { padding: 36px 32px 60px; }
+  .form-footer { left: 32px; right: 32px; bottom: 20px; }
+}
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(0,153,204,0.92); border:1px solid rgba(0,191,255,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,77,79,0.4); }
+.pc-toast.info { background:rgba(52,152,219,0.92); border:1px solid rgba(64,169,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(10,28,60,0.96); border:1px solid rgba(0,191,255,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#00BFFF; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#CCCCCC; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#00BFFF,#0099CC); color:#0A1628; }
+.pc-btn-secondary { background:rgba(0,191,255,0.08); color:#00BFFF; border:1px solid rgba(0,191,255,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(0,191,255,0.15); border-top-color:#00BFFF; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#00BFFF; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+
+<div class="login-wrapper">
+  <div class="login-container">
+
+    <!-- Left brand -->
+    <div class="brand-panel">
+      <div class="brand-logo">&#x1F4A7;</div>
+      <div class="brand-title">合阳洽川湿地</div>
+      <div class="brand-subtitle">智慧管理平台</div>
+      <div class="brand-divider"></div>
+      <div class="brand-desc">
+        智慧安防 <span>|</span> 环境监测 <span>|</span> 设备管理<br>
+        无人机巡查 <span>|</span> 应急指挥 <span>|</span> 数据分析
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="form-panel">
+      <div class="form-header">
+        <h2>账号登录</h2>
+        <p>请输入您的账号和密码以访问系统</p>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">账号</label>
+        <div class="input-wrap">
+          <span class="input-icon">&#x1F464;</span>
+          <input type="text" class="input-field" id="username" placeholder="请输入账号 / 工号" autocomplete="username">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">密码</label>
+        <div class="input-wrap">
+          <span class="input-icon">&#x1F512;</span>
+          <input type="password" class="input-field" id="password" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+      </div>
+
+      <div class="options-row">
+        <label class="remember-box">
+          <input type="checkbox" id="remember">
+          <span>记住密码</span>
+        </label>
+        <a href="javascript:void(0)" class="forgot-link" onclick="showToast('请联系系统管理员重置密码', 'info')">忘记密码？</a>
+      </div>
+
+      <button class="btn-login" id="loginBtn" onclick="handleLogin()">登 录</button>
+
+      <div class="error-tip" id="errorTip"></div>
+
+      <div class="form-footer">
+        &copy; 2026 合阳洽川湿地智慧管理平台 · 技术支持
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Particle background
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+let W, H;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.alpha = Math.random() * 0.4 + 0.1;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > W) this.vx *= -1;
+    if (this.y < 0 || this.y > H) this.vy *= -1;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0, 191, 255, ${this.alpha})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function drawLines() {
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 140) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(0, 191, 255, ${0.06 * (1 - dist/140)})`;
+        ctx.lineWidth = 0.6;
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  drawLines();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// Login logic
+function handleLogin() {
+  const user = document.getElementById('username').value.trim();
+  const pass = document.getElementById('password').value.trim();
+  const err = document.getElementById('errorTip');
+
+  if (!user) { err.textContent = '请输入账号'; err.classList.add('show'); return; }
+  if (!pass) { err.textContent = '请输入密码'; err.classList.add('show'); return; }
+
+  // Demo auth: any non-empty credentials accepted
+  err.classList.remove('show');
+
+  // Remember me
+  if (document.getElementById('remember').checked) {
+    localStorage.setItem('hcw_username', user);
+  } else {
+    localStorage.removeItem('hcw_username');
+  }
+
+  // Redirect to dashboard
+  localStorage.setItem('userRole','admin'); window.location.href = 'P02-导航页.html';
+}
+
+// Enter key submit
+document.getElementById('password').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') handleLogin();
+});
+
+// Restore username
+(function() {
+  const saved = localStorage.getItem('hcw_username');
+  if (saved) {
+    document.getElementById('username').value = saved;
+    document.getElementById('remember').checked = true;
+  }
+})();
+</script>
+
+</body>
+</html>

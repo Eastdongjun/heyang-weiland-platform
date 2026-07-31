@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>应急工单详情 - 合阳洽川湿地智慧管理平台</title>
+<style>
+/* ===== P03 CSS VARIABLES ===== */
+:root {
+  --bg-deep: #0A1628;
+  --bg-card: rgba(15, 30, 55, 0.85);
+  --bg-card2: rgba(10, 28, 60, 0.6);
+  --border: rgba(0, 191, 255, 0.25);
+  --border-bright: rgba(0, 191, 255, 0.4);
+  --accent: #00BFFF;
+  --accent-dim: rgba(0, 191, 255, 0.12);
+  --accent-glow: rgba(0, 191, 255, 0.3);
+  --cyan: #00E5CC;
+  --danger: #FF3366;
+  --danger-glow: rgba(255, 51, 102, 0.3);
+  --warn: #FFCC00;
+  --warn-dim: rgba(255, 204, 0, 0.12);
+  --green: #00CC99;
+  --green-dim: rgba(0, 204, 153, 0.12);
+  --orange: #FF8C00;
+  --text: #FFFFFF;
+  --text2: #CCCCCC;
+  --text3: #8899AA;
+  --font-num: "DIN Pro", "SF Mono", monospace;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== TOP HEADER (P03 style) ===== */
+.top-bar {
+  height: 64px;
+  background: linear-gradient(180deg, rgba(10,22,40,0.98), rgba(10,22,40,0.85));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+}
+.top-bar::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.6;
+}
+.top-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.top-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, #fff, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.top-title-sub {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+.top-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--text2);
+}
+.top-time {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: var(--font-num);
+}
+.top-weather {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text3);
+}
+.btn-exit {
+  color: var(--text3);
+  font-size: 12px;
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+.btn-exit:hover {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+.main-row {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 8px;
+  padding: 8px;
+  height: calc(100vh - 64px - 52px);
+}
+
+/* ===== LEFT COLUMN ===== */
+.left-panel {
+  width: 520px;
+  flex-shrink: 0;
+  padding: 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+}
+.left-panel::-webkit-scrollbar,
+.right-panel::-webkit-scrollbar {
+  width: 3px;
+}
+.left-panel::-webkit-scrollbar-thumb,
+.right-panel::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+/* ===== RIGHT COLUMN ===== */
+.right-panel {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* ===== PANEL (P03 style) ===== */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+}
+.panel-title::before {
+  content: '';
+  width: 3px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.panel-title .badge {
+  margin-left: auto;
+  font-size: 10px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-weight: 400;
+}
+
+/* ===== INFO ROWS ===== */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+}
+.info-row {
+  display: flex;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(0,191,255,0.06);
+  font-size: 12px;
+  align-items: center;
+}
+.info-row.full {
+  grid-column: 1 / -1;
+}
+.info-label {
+  color: var(--text3);
+  min-width: 75px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.info-value {
+  color: var(--text2);
+  font-weight: 500;
+}
+.info-value.accent {
+  color: var(--accent);
+}
+.info-value.warn {
+  color: var(--warn);
+}
+.info-value.danger {
+  color: var(--danger);
+}
+.info-value.green {
+  color: var(--green);
+}
+
+/* ===== STATUS BADGES ===== */
+.badge-status {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 9px;
+}
+.badge-status.pending {
+  background: rgba(255, 51, 102, 0.15);
+  color: var(--danger);
+}
+.badge-status.processing {
+  background: rgba(255, 204, 0, 0.15);
+  color: var(--warn);
+}
+.badge-status.done {
+  background: rgba(0, 204, 153, 0.15);
+  color: var(--green);
+}
+.badge-status.rejected {
+  background: rgba(136, 153, 170, 0.15);
+  color: var(--text3);
+}
+.badge-lvl {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+}
+.badge-lvl.l1 {
+  background: rgba(255, 51, 102, 0.2);
+  color: var(--danger);
+  border: 1px solid rgba(255, 51, 102, 0.3);
+}
+.badge-lvl.l2 {
+  background: rgba(255, 204, 0, 0.2);
+  color: var(--warn);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+}
+.badge-lvl.l3 {
+  background: rgba(0, 191, 255, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(0, 191, 255, 0.25);
+}
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+.status-dot.processing {
+  background: var(--warn);
+  box-shadow: 0 0 4px rgba(255, 204, 0, 0.5);
+}
+.status-dot.done {
+  background: var(--green);
+  box-shadow: 0 0 4px rgba(0, 204, 153, 0.5);
+}
+.status-dot.pending {
+  background: var(--danger);
+  box-shadow: 0 0 4px rgba(255, 51, 102, 0.5);
+}
+
+/* ===== DESCRIPTION BOX ===== */
+.desc-box {
+  background: var(--bg-card2);
+  border: 1px solid rgba(0,191,255,0.08);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+/* ===== LOCATION DISPLAY ===== */
+.location-box {
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.location-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(0,191,255,0.06), transparent);
+}
+
+/* ===== TIMELINE ===== */
+.timeline {
+  position: relative;
+  padding-left: 20px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--border);
+}
+.timeline-item {
+  position: relative;
+  padding: 0 0 16px 16px;
+  font-size: 11px;
+}
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg-card2);
+  border: 2px solid var(--border);
+}
+.timeline-item.active::before {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+.timeline-item.done::before {
+  background: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 0 4px rgba(0,204,153,0.4);
+}
+.timeline-item.failed::before {
+  background: var(--danger);
+  border-color: var(--danger);
+  box-shadow: 0 0 4px var(--danger-glow);
+}
+.timeline-item .tl-time {
+  color: var(--text3);
+  font-family: var(--font-num);
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+.timeline-item .tl-content {
+  color: var(--text2);
+  line-height: 1.5;
+}
+.timeline-item .tl-content strong {
+  color: var(--text);
+}
+.timeline-item.active .tl-content {
+  color: var(--accent);
+}
+
+/* ===== HANDLER INFO ===== */
+.handler-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.handler-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), rgba(0,191,255,0.2));
+  color: #fff;
+}
+.handler-info {
+  flex: 1;
+}
+.handler-info .h-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.handler-info .h-role {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 1px;
+}
+.handler-info .h-phone {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: var(--font-num);
+  margin-top: 2px;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-bar {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+.btn-primary {
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+.btn-primary:hover {
+  background: rgba(0,191,255,0.25);
+  border-color: var(--accent);
+}
+.btn-danger {
+  background: rgba(255,51,102,0.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,51,102,0.2);
+}
+.btn-danger:hover {
+  background: rgba(255,51,102,0.25);
+  border-color: var(--danger);
+}
+.btn-green {
+  background: rgba(0,204,153,0.15);
+  color: var(--green);
+  border: 1px solid rgba(0,204,153,0.2);
+}
+.btn-green:hover {
+  background: rgba(0,204,153,0.25);
+  border-color: var(--green);
+}
+.btn-warn {
+  background: rgba(255,204,0,0.15);
+  color: var(--warn);
+  border: 1px solid rgba(255,204,0,0.2);
+}
+.btn-warn:hover {
+  background: rgba(255,204,0,0.25);
+  border-color: var(--warn);
+}
+
+/* ===== BOTTOM NAVIGATION (P03 style) ===== */
+.bottom-nav {
+  height: 52px;
+  background: linear-gradient(180deg, transparent, #0A1628 30%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 12px;
+}
+.nav-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text3);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.25s;
+  min-width: 56px;
+  text-decoration: none;
+}
+.nav-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--border);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+.nav-btn.active {
+  background: rgba(0,191,255,0.1);
+  border-color: var(--border-bright);
+  color: var(--accent);
+}
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.25s;
+}
+.nav-btn:hover .nav-icon svg {
+  transform: scale(1.12);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+
+<!-- ===== TOP HEADER ===== -->
+<header class="top-bar">
+  <div class="top-left" style="width:240px;display:flex;align-items:center;gap:12px;">
+    <a href="P09-应急管理.html" style="color:var(--accent);font-size:14px;text-decoration:none;white-space:nowrap;padding:4px 10px;border:1px solid var(--border);border-radius:4px;">‹ 返回</a>
+    <span id="headerDate" style="font-size:14px;font-weight:600;color:var(--accent);font-family:var(--font-num);">--年--月--日</span>
+  </div>
+  <div class="top-center">
+    <div class="top-title">洽川湿地应急工单</div>
+    <div class="top-title-sub">快速响应 · 统一调度</div>
+  </div>
+  <div class="top-right">
+    <span class="top-weather">☀️ 26°C · 晴</span>
+    <span id="clockSec" class="top-time">--:--:--</span>
+    <a href="P02-导航页.html" class="btn-exit">退出</a>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+  <div class="main-row">
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <aside class="left-panel">
+
+      <!-- 工单基本信息 -->
+      <div class="panel">
+        <div class="panel-title">📋 工单基本信息</div>
+        <div class="info-grid">
+          <div class="info-row full">
+            <span class="info-label">工单编号</span>
+            <span class="info-value accent">EM-20260512-003</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">工单类型</span>
+            <span class="info-value">洪涝灾害预警</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">紧急等级</span>
+            <span class="info-value"><span class="badge-lvl l1">Ⅰ级</span> 最高</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">发起时间</span>
+            <span class="info-value">2026-05-12 08:15:00</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">截止时限</span>
+            <span class="info-value warn">2026-05-12 20:15:00</span>
+          </div>
+          <div class="info-row full">
+            <span class="info-label">事发位置</span>
+            <span class="info-value">洽川湿地 · 核心区北段 (N35°16'23" E110°18'45")</span>
+          </div>
+          <div class="info-row full">
+            <span class="info-label">关联预案</span>
+            <span class="info-value accent">一级洪涝应急响应预案 V3.2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 事件描述 -->
+      <div class="panel">
+        <div class="panel-title">📄 事件描述</div>
+        <div class="desc-box">
+          2026年5月12日08:10，洽川湿地核心区北段水位监测点（W-012）触发红色警报，实时水位达到 358.7m（警戒水位 356.0m）。受上游持续强降水影响，预计未来6小时内水位将持续上涨至 360.0m以上，存在漫堤风险。需立即启动一级应急响应，组织人员巡堤、加固薄弱段、疏散核心区游客。
+        </div>
+      </div>
+
+      <!-- 事发位置地图 -->
+      <div class="panel" style="flex-shrink:0;">
+        <div class="panel-title">📍 事发位置</div>
+        <div class="location-box">
+          <span>[Leaflet 地图 - 事发点位 N35°16'23" E110°18'45"]</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ===== RIGHT COLUMN ===== -->
+    <aside class="right-panel">
+
+      <!-- 处置责任人 -->
+      <div class="panel">
+        <div class="panel-title">👤 处置责任人</div>
+        <div class="handler-card">
+          <div class="handler-avatar">王</div>
+          <div class="handler-info">
+            <div class="h-name">王五</div>
+            <div class="h-role">应急组长 · 指挥中心</div>
+            <div class="h-phone">📞 138****9012</div>
+          </div>
+          <span class="badge-status processing"><span class="status-dot processing"></span>处置中</span>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;font-size:10px;color:var(--text3);">
+          <span>承接时间: 2026-05-12 08:18:00</span>
+          <span>·</span>
+          <span>响应时长: 3分钟</span>
+        </div>
+      </div>
+
+      <!-- 处置时间线 -->
+      <div class="panel">
+        <div class="panel-title">⏱ 处置时间线</div>
+        <div class="timeline">
+          <div class="timeline-item done">
+            <div class="tl-time">08:15:00</div>
+            <div class="tl-content"><strong>系统</strong> · 自动生成应急工单</div>
+          </div>
+          <div class="timeline-item done">
+            <div class="tl-time">08:15:30</div>
+            <div class="tl-content"><strong>智能派单</strong> · 指派至王五（应急组长）</div>
+          </div>
+          <div class="timeline-item done">
+            <div class="tl-time">08:16:00</div>
+            <div class="tl-content"><strong>短信通知</strong> · 发送至 5 名应急小组成员</div>
+          </div>
+          <div class="timeline-item done">
+            <div class="tl-time">08:18:00</div>
+            <div class="tl-content"><strong>王五</strong> · 确认接收工单</div>
+          </div>
+          <div class="timeline-item active">
+            <div class="tl-time">08:20:00</div>
+            <div class="tl-content"><strong>王五</strong> · 启动一级响应预案，调度人员赶赴现场</div>
+          </div>
+          <div class="timeline-item">
+            <div class="tl-time">--:--:--</div>
+            <div class="tl-content">等待下一节点反馈</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 处置动作 -->
+      <div class="panel">
+        <div class="panel-title">⚡ 处置动作</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.8;margin-bottom:12px;padding:8px 10px;background:var(--bg-card2);border:1px solid rgba(0,191,255,0.08);border-radius:4px;">
+          1. 启动一级响应预案<br>
+          2. 通知各小组负责人到位<br>
+          3. 开启应急通道、疏散人员<br>
+          4. 实时监测水位变化
+        </div>
+        <div class="action-bar">
+          <button class="btn btn-green" onclick="showToast('已确认执行', 'success')">✓ 确认执行</button>
+          <button class="btn btn-warn" onclick="showToast('已转派至李四（副班长）', 'info')">⟳ 转派</button>
+          <button class="btn btn-danger" onclick="showConfirm('确认结案', '确认该工单已完成处置并结案？', function(){ showToast('工单已结案', 'success'); })">✕ 结案</button>
+        </div>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<!-- ===== BOTTOM NAVIGATION (P03 style, P09 active) ===== -->
+<nav class="bottom-nav">
+  <a class="nav-btn" href="P03-大屏GIS地图.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2C7 2 3 6.5 3 12c0 2 .5 3.5 1.5 5L12 22l7.5-5c1-1.5 1.5-3 1.5-5 0-5.5-4-10-9-10z"/></svg></span>
+    <span>GIS地图</span>
+  </a>
+  <a class="nav-btn" href="P04-视频监控.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="16" height="14" rx="2"/><polygon points="23,7 19,10 19,14 23,17"/></svg></span>
+    <span>视频监控</span>
+  </a>
+  <a class="nav-btn" href="P05-无人机管理.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L9 7l-4 1 3 2.5L7 15l5-3 5 3-1-4.5L19 8l-4-1z"/><line x1="12" y1="18" x2="12" y2="2"/></svg></span>
+    <span>无人机</span>
+  </a>
+  <a class="nav-btn" href="P08-环境监测.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 8C15 5 9 5 7 8c-3 4 0 9 5 12 5-3 8-8 5-12z"/><line x1="12" y1="20" x2="12" y2="11"/></svg></span>
+    <span>环境监测</span>
+  </a>
+  <a class="nav-btn" href="P06-告警中心.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+    <span>告警中心</span>
+  </a>
+  <a class="nav-btn" href="P07-数据统计.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="14" rx="1"/><rect x="17" y="4" width="4" height="18" rx="1"/></svg></span>
+    <span>数据统计</span>
+  </a>
+  <a class="nav-btn active" href="P09-应急管理.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.5 4 10.5 9 11 5-.5 9-5.5 9-11V7l-9-5z"/><line x1="12" y1="8" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/></svg></span>
+    <span>应急管理</span>
+  </a>
+  <a class="nav-btn" href="P10-VR查看.html">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><line x1="12" y1="9" x2="12" y2="15"/></svg></span>
+    <span>VR查看</span>
+  </a>
+</nav>
+
+<!-- ===== CLOCK & TOAST/MODAL SCRIPT ===== -->
+<script>
+// ---- Clock ----
+function updateClock(){
+  var n = new Date, w = ['日','一','二','三','四','五','六'];
+  document.getElementById('clockSec').textContent = n.toLocaleTimeString('zh-CN', {hour12: false});
+  document.getElementById('headerDate').textContent = n.getFullYear() + '年' + (n.getMonth()+1) + '月' + n.getDate() + '日';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ---- Toast System ----
+if (!document.getElementById('pcToastWrap')) {
+  var tw = document.createElement('div');
+  tw.id = 'pcToastWrap';
+  tw.style.cssText = 'position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+  document.body.appendChild(tw);
+}
+function showToast(msg, type) {
+  var w = document.getElementById('pcToastWrap');
+  var t = document.createElement('div');
+  t.style.cssText = 'padding:10px 24px;border-radius:6px;font-size:13px;font-weight:500;color:#fff;backdrop-filter:blur(8px);animation:pcToastIn 0.3s ease;pointer-events:auto;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);';
+  var bg, bd;
+  if (type === 'success') { bg = 'rgba(0,204,153,0.92)'; bd = 'rgba(0,204,153,0.4)'; }
+  else if (type === 'info') { bg = 'rgba(0,191,255,0.92)'; bd = 'rgba(0,191,255,0.4)'; }
+  else { bg = 'rgba(255,51,102,0.92)'; bd = 'rgba(255,51,102,0.4)'; }
+  t.style.background = bg;
+  t.style.border = '1px solid ' + bd;
+  t.innerHTML = msg;
+  w.appendChild(t);
+  setTimeout(function(){
+    t.style.animation = 'pcToastOut 0.3s ease forwards';
+    setTimeout(function(){ t.remove(); }, 300);
+  }, 2700);
+}
+if (!document.getElementById('pcToastStyle')) {
+  var ts = document.createElement('style');
+  ts.id = 'pcToastStyle';
+  ts.textContent = '@keyframes pcToastIn { from{opacity:0;transform:translateY(-20px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} } @keyframes pcToastOut { to{opacity:0;transform:translateY(-20px) scale(0.95)} }';
+  document.head.appendChild(ts);
+}
+
+// ---- Modal System ----
+var modalOverlay = document.getElementById('pcModalOverlay');
+if (!modalOverlay) {
+  modalOverlay = document.createElement('div');
+  modalOverlay.id = 'pcModalOverlay';
+  modalOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+  modalOverlay.onclick = function(e) { if(e.target===this) closeModal(); };
+  var modal = document.createElement('div');
+  modal.style.cssText = 'background:rgba(15,30,55,0.96);border:1px solid rgba(0,191,255,0.25);border-radius:10px;padding:24px;min-width:360px;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+  modal.innerHTML = '<div id="pcModalTitle" style="font-size:16px;font-weight:600;color:#00BFFF;margin-bottom:12px;">提示</div><div id="pcModalBody" style="font-size:14px;color:#CCCCCC;line-height:1.6;margin-bottom:20px;">内容</div><div class="pc-modal-actions" style="display:flex;justify-content:flex-end;gap:10px;"><button class="pc-btn pc-btn-secondary" onclick="closeModal()" style="padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid rgba(0,191,255,0.25);background:rgba(0,191,255,0.08);color:#00BFFF;">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary" style="padding:8px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:rgba(0,191,255,0.15);color:#00BFFF;border:1px solid rgba(0,191,255,0.3);">确认</button></div>';
+  modalOverlay.appendChild(modal);
+  document.body.appendChild(modalOverlay);
+}
+function showModal(title, body, onConfirm) {
+  document.getElementById('pcModalTitle').textContent = title || '提示';
+  document.getElementById('pcModalBody').innerHTML = body || '';
+  var btn = document.getElementById('pcModalConfirm');
+  btn.onclick = function() { closeModal(); if (onConfirm) onConfirm(); };
+  document.getElementById('pcModalOverlay').style.display = 'flex';
+}
+function closeModal() {
+  document.getElementById('pcModalOverlay').style.display = 'none';
+}
+function showConfirm(title, body, onConfirm) {
+  showModal(title, body, onConfirm);
+}
+</script>
+</body>
+</html>

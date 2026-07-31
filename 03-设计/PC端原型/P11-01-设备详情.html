@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>设备详情 - 合阳湿地后台管理</title>
+<style>
+:root { --bg:#f0f2f5; --sidebar:#001529; --header:#ffffff; --card:#ffffff; --hover:#e6f7ff; --border:#e8e8e8; --accent:#1890ff; --text:#333333; --text2:#666666; --text3:#999999; --danger:#ff4d4f; --warn:#faad14; --success:#52c41a; --info:#1890ff; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; height:100vh; overflow:hidden; }
+.header { height:52px; background:var(--header); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 24px; flex-shrink:0; }
+.header-left { display:flex; align-items:center; gap:14px; }
+.header-left a { color:var(--text2); text-decoration:none; font-size:13px; padding:4px 10px; border-radius:4px; transition:all .15s; }
+.header-left a:hover { color:var(--accent); background:var(--hover); }
+.header-title { font-size:17px; font-weight:600; color:var(--text); }
+.header-right { display:flex; align-items:center; gap:14px; font-size:13px; color:var(--text2); }
+.header-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:4px; background:rgba(82,196,26,0.1); color:var(--success); font-size:12px; font-weight:500; border:1px solid rgba(82,196,26,0.2); }
+.logout-btn { cursor:pointer; padding:4px 10px; border-radius:4px; transition:all .15s; color:var(--danger); }
+.logout-btn:hover { background:rgba(255,77,79,0.08); }
+.container { display:flex; height:calc(100vh - 52px); }
+.sidebar { width:200px; background:var(--sidebar); padding:16px 0; flex-shrink:0; display:flex; flex-direction:column; }
+.sidebar-item { display:flex; align-items:center; gap:10px; padding:11px 20px; font-size:13px; color:rgba(255,255,255,0.65); cursor:pointer; text-decoration:none; transition:all .15s; border-left:3px solid transparent; }
+.sidebar-item:hover { background:rgba(255,255,255,0.06); color:#fff; }
+.sidebar-item.active { background:rgba(24,144,255,0.15); color:var(--accent); border-left-color:var(--accent); }
+.sidebar-icon { font-size:16px; width:20px; text-align:center; }
+.content { flex:1; padding:20px 24px; overflow-y:auto; }
+.page-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+.page-hd h2 { font-size:18px; font-weight:600; }
+.page-hd-actions { display:flex; gap:8px; }
+.btn { font-size:12px; padding:7px 16px; border-radius:4px; cursor:pointer; border:none; transition:all .15s; }
+.btn-primary { background:var(--accent); color:#fff; font-weight:500; }
+.btn-primary:hover { opacity:.85; }
+.btn-secondary { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-secondary:hover { color:var(--accent); border-color:var(--accent); }
+
+/* KPI row */
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:14px 16px; }
+.kpi-card .kpi-label { font-size:12px; color:var(--text3); margin-bottom:4px; }
+.kpi-card .kpi-val { font-size:22px; font-weight:700; color:var(--text); }
+.kpi-card .kpi-desc { font-size:11px; color:var(--text3); margin-top:2px; }
+
+/* Card */
+.card { background:var(--card); border:1px solid var(--border); border-radius:6px; margin-bottom:14px; overflow:hidden; }
+.card-hd { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid var(--border); }
+.card-hd-title { font-size:14px; font-weight:600; color:var(--text); display:flex; align-items:center; gap:8px; }
+.card-hd-title::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; }
+.card-more { font-size:12px; color:var(--accent); cursor:pointer; text-decoration:none; }
+.card-more:hover { text-decoration:underline; }
+.card-body { padding:14px 18px; }
+
+/* Info grid */
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:0; }
+.info-row { display:flex; padding:9px 0; border-bottom:1px solid var(--border); }
+.info-row:nth-last-child(-n+2) { border-bottom:none; }
+.info-label { width:110px; flex-shrink:0; color:var(--text3); font-size:13px; }
+.info-value { flex:1; color:var(--text); font-size:13px; font-weight:500; }
+
+/* Status badge */
+.status-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 10px; border-radius:10px; font-size:12px; font-weight:500; }
+.status-ok { background:rgba(82,196,26,0.1); color:var(--success); border:1px solid rgba(82,196,26,0.2); }
+.status-warn { background:rgba(250,173,20,0.1); color:var(--warn); border:1px solid rgba(250,173,20,0.2); }
+.status-off { background:rgba(153,153,153,0.1); color:var(--text3); border:1px solid rgba(153,153,153,0.2); }
+.status-dot { width:6px; height:6px; border-radius:50%; display:inline-block; }
+.status-dot.ok { background:var(--success); }
+.status-dot.warn { background:var(--warn); }
+.status-dot.off { background:var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <a href="P11-设备台账.html">‹ 设备台账</a>
+    <span class="header-title">设备详情</span>
+  </div>
+  <div class="header-right">
+    <span class="header-badge"><span class="status-dot ok"></span> 在线 · 运行正常</span>
+    <span>编号: CAM-0001</span>
+    <span class="logout-btn" onclick="location.href='P01-登录.html'">退出</span>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <a class="sidebar-item active" href="#"><span class="sidebar-icon">📋</span>基本信息</a>
+    <a class="sidebar-item" href="#"><span class="sidebar-icon">📊</span>运行状态</a>
+    <a class="sidebar-item" href="#"><span class="sidebar-icon">🔧</span>维保记录</a>
+    <a class="sidebar-item" href="#"><span class="sidebar-icon">🔔</span>告警历史</a>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+    <!-- Page Header -->
+    <div class="page-hd">
+      <h2>北门保护区主摄像机</h2>
+      <div class="page-hd-actions">
+        <button class="btn btn-secondary" onclick="showToast('编辑模式已开启','info')">✏️ 编辑</button>
+        <button class="btn btn-primary" onclick="showToast('操作成功','success')">💾 保存</button>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-row">
+      <div class="kpi-card"><div class="kpi-label">运行时长</div><div class="kpi-val" style="color:var(--success)">4,230</div><div class="kpi-desc">小时</div></div>
+      <div class="kpi-card"><div class="kpi-label">今日告警</div><div class="kpi-val" style="color:var(--warn)">2</div><div class="kpi-desc">次</div></div>
+      <div class="kpi-card"><div class="kpi-label">存储容量</div><div class="kpi-val" style="color:var(--info)">68%</div><div class="kpi-desc">已使用 340GB / 500GB</div></div>
+      <div class="kpi-card"><div class="kpi-label">设备温度</div><div class="kpi-val" style="color:var(--accent)">42°</div><div class="kpi-desc">正常范围</div></div>
+    </div>
+
+    <!-- 基本信息 Card -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-hd-title">基本信息</span>
+        <a class="card-more" href="#">编辑 →</a>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-row"><span class="info-label">设备名称</span><span class="info-value">北门保护区主摄像机</span></div>
+          <div class="info-row"><span class="info-label">设备类型</span><span class="info-value">200万像素网络球机</span></div>
+          <div class="info-row"><span class="info-label">安装位置</span><span class="info-value">北门保护区入口标杆</span></div>
+          <div class="info-row"><span class="info-label">经纬度</span><span class="info-value">34.9876°N, 110.2345°E</span></div>
+          <div class="info-row"><span class="info-label">生产厂家</span><span class="info-value">海康威视</span></div>
+          <div class="info-row"><span class="info-label">安装日期</span><span class="info-value">2025-03-15</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 运行状态 Card -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-hd-title">运行状态</span>
+        <span class="status-badge status-ok"><span class="status-dot ok"></span> 在线</span>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-row"><span class="info-label">在线状态</span><span class="info-value"><span class="status-badge status-ok">在线</span></span></div>
+          <div class="info-row"><span class="info-label">运行时长</span><span class="info-value">4,230 小时 (约176天)</span></div>
+          <div class="info-row"><span class="info-label">最后检测</span><span class="info-value">2026-05-12 10:42:18</span></div>
+          <div class="info-row"><span class="info-label">固件版本</span><span class="info-value">V3.2.1</span></div>
+          <div class="info-row"><span class="info-label">保修期至</span><span class="info-value">2027-03-15</span></div>
+          <div class="info-row"><span class="info-label">下次维保</span><span class="info-value">2026-07-15 <span style="color:var(--warn);font-size:11px;">(剩余64天)</span></span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="pcToastWrap" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;"></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.style.cssText='padding:10px 22px;border-radius:6px;font-size:13px;color:#fff;animation:ti 0.3s ease;pointer-events:auto;box-shadow:0 4px 12px rgba(0,0,0,0.15)';t.style.background=type==='success'?'#52c41a':type==='error'?'#ff4d4f':'#1890ff';t.textContent=msg;w.appendChild(t);setTimeout(function(){t.style.animation='to 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2000)}
+</script>
+<style>
+@keyframes ti{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to{to{opacity:0;transform:translateY(-16px)}}
+</style>
+
+</body>
+</html>

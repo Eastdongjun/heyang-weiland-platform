@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>消息中心 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg: #f0f4f3;
+  --surface: #ffffff;
+  --primary: #1a936f;
+  --primary-dark: #147a5c;
+  --primary-light: rgba(26, 147, 111, 0.08);
+  --danger: #e74c3c;
+  --danger-light: rgba(231, 76, 60, 0.08);
+  --warning: #f39c12;
+  --warning-light: rgba(243, 156, 18, 0.08);
+  --info: #3498db;
+  --info-light: rgba(52, 152, 219, 0.08);
+  --text: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border: #e8eceb;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
+  min-height: 100vh;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.page-header h1 { font-size: 18px; font-weight: 700; }
+.back-arrow {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #fff; cursor: pointer; margin-left: -8px;
+}
+
+.filter-bar {
+  background: var(--surface);
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+.filter-tab {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.filter-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.msg-list { padding: 12px 16px; }
+.msg-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px 16px 14px 20px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.msg-card:active { transform: scale(0.98); }
+.msg-card.unread::before {
+  content: '';
+  position: absolute;
+  top: 18px; left: 8px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+}
+.msg-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.msg-icon.alert { background: var(--danger-light); }
+.msg-icon.order { background: var(--primary-light); }
+.msg-icon.sys { background: var(--info-light); }
+.msg-body { flex: 1; min-width: 0; }
+.msg-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.msg-time { font-size: 11px; color: var(--text-tertiary); font-weight: 400; flex-shrink: 0; margin-left: 8px; }
+.msg-content { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+
+.bottom-tab {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 6px;
+  z-index: 100;
+}
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+  min-width: 56px;
+}
+.tab-item.active { color: var(--primary); }
+.tab-icon { font-size: 24px; line-height: 1; }
+.tab-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 18px; height: 18px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "SF Mono", monospace;
+  padding: 0 5px;
+}
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.m-toast-wrap { position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.m-toast { padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; color:#fff; animation:mToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.m-toast.success { background:linear-gradient(135deg,#1a936f,#147a5c); }
+.m-toast.error { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+.m-toast.info { background:linear-gradient(135deg,#3498db,#2980b9); }
+@keyframes mToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes mToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.m-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; display:none; align-items:center; justify-content:center; padding:16px; }
+.m-modal-overlay.active { display:flex; }
+.m-modal { background:#fff; border-radius:14px; padding:20px; width:100%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.15); }
+.m-modal-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
+.m-modal-body { font-size:14px; color:#666; line-height:1.6; margin-bottom:20px; }
+.m-modal-actions { display:flex; gap:10px; }
+.m-btn { flex:1; padding:13px 0; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; text-align:center; }
+.m-btn-primary { background:linear-gradient(135deg,#1a936f,#147a5c); color:#fff; }
+.m-btn-secondary { background:#f0f4f3; color:#666; }
+.m-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998; display:none; align-items:flex-end; justify-content:center; }
+.m-sheet-overlay.active { display:flex; }
+.m-sheet { background:#fff; border-radius:16px 16px 0 0; padding:16px; width:100%; max-width:500px; transform:translateY(100%); transition:transform .3s ease; }
+.m-sheet-overlay.active .m-sheet { transform:translateY(0); }
+.m-sheet-title { font-size:16px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e8eceb; }
+.m-sheet-item { padding:14px; text-align:center; font-size:15px; color:#1a1a1a; cursor:pointer; border-bottom:1px solid #f0f4f3; }
+.m-sheet-item:last-child { border-bottom:none; color:#e74c3c; font-weight:600; }
+.m-loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.m-loading-overlay.active { display:flex; }
+.m-loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:mSpin 0.8s linear infinite; }
+.m-loading-text { color:#fff; font-size:15px; font-weight:600; }
+@keyframes mSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="mToastWrap" class="m-toast-wrap"></div>
+<div id="mModalOverlay" class="m-modal-overlay" onclick="if(event.target===this)closeMModal()"><div class="m-modal"><div id="mModalTitle" class="m-modal-title">提示</div><div id="mModalBody" class="m-modal-body">内容</div><div class="m-modal-actions"><button class="m-btn m-btn-secondary" onclick="closeMModal()">取消</button><button id="mModalConfirm" class="m-btn m-btn-primary">确认</button></div></div></div>
+<div id="mSheetOverlay" class="m-sheet-overlay" onclick="if(event.target===this)closeMSheet()"><div class="m-sheet"><div id="mSheetTitle" class="m-sheet-title">选择操作</div><div id="mSheetBody"></div></div></div>
+<div id="mLoadingOverlay" class="m-loading-overlay"><div class="m-loading-spinner"></div><div id="mLoadingText" class="m-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('mToastWrap');var t=document.createElement('div');t.className='m-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='mToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('mModalTitle').textContent=title||'提示';document.getElementById('mModalBody').textContent=body||'';var btn=document.getElementById('mModalConfirm');btn.onclick=function(){closeMModal();if(onConfirm)onConfirm();};document.getElementById('mModalOverlay').classList.add('active');}
+function closeMModal(){document.getElementById('mModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showActionSheet(title,items){document.getElementById('mSheetTitle').textContent=title||'选择操作';var b=document.getElementById('mSheetBody');b.innerHTML='';items.forEach(function(it){var d=document.createElement('div');d.className='m-sheet-item';d.textContent=it.text;d.onclick=function(){closeMSheet();if(it.action)it.action();};b.appendChild(d);});document.getElementById('mSheetOverlay').classList.add('active');}
+function closeMSheet(){document.getElementById('mSheetOverlay').classList.remove('active');}
+function showLoading(msg){document.getElementById('mLoadingText').textContent=msg||'加载中...';document.getElementById('mLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('mLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<header class="page-header">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span class="back-arrow" onclick="history.back()">&#x2039;</span>
+    <h1>消息中心</h1>
+  </div>
+  <span style="font-size:13px;opacity:0.9;cursor:pointer;" onclick="showToast('全部已读', 'info')">全部已读</span>
+</header>
+
+<div class="filter-bar">
+  <div class="filter-tab active" onclick="filterMsg(this,'all')">全部 5</div>
+  <div class="filter-tab" onclick="filterMsg(this,'alert')">告警 2</div>
+  <div class="filter-tab" onclick="filterMsg(this,'order')">工单 2</div>
+  <div class="filter-tab" onclick="filterMsg(this,'sys')">系统 1</div>
+</div>
+
+<div class="msg-list">
+  <div class="msg-card unread" data-type="alert" onclick="location.href='M02-01-消息详情.html'">
+    <div class="msg-icon alert">&#x1F6A8;</div>
+    <div class="msg-body">
+      <div class="msg-title">
+        <span>北门保护区 · 非法闯入告警</span>
+        <span class="msg-time">10:42</span>
+      </div>
+      <div class="msg-content">视频分析检测到1名人员翻越围栏进入北门保护区，请立即前往处置。</div>
+    </div>
+  </div>
+
+  <div class="msg-card unread" data-type="order" onclick="location.href='M03-工单.html'">
+    <div class="msg-icon order">&#x1F4CB;</div>
+    <div class="msg-body">
+      <div class="msg-title">
+        <span>新工单待接单 WO-001</span>
+        <span class="msg-time">10:42</span>
+      </div>
+      <div class="msg-content">北门保护区入口 · 非法闯入，距离您 240m，请尽快接单处置。</div>
+    </div>
+  </div>
+
+  <div class="msg-card unread" data-type="alert" onclick="location.href='M02-01-消息详情.html'">
+    <div class="msg-icon alert">&#x26A0;&#xFE0F;</div>
+    <div class="msg-body">
+      <div class="msg-title">
+        <span>水质监测点-B3 · pH异常</span>
+        <span class="msg-time">09:15</span>
+      </div>
+      <div class="msg-content">pH值 8.9 超过阈值上限 8.5，已连续异常 15 分钟。</div>
+    </div>
+  </div>
+
+  <div class="msg-card" data-type="order" onclick="location.href='M03-工单.html'">
+    <div class="msg-icon order">&#x2705;</div>
+    <div class="msg-body">
+      <div class="msg-title">
+        <span>工单已审核通过 WO-006</span>
+        <span class="msg-time">08:50</span>
+      </div>
+      <div class="msg-content">气象监测站风速超限处置工单已通过审核，感谢您的工作。</div>
+    </div>
+  </div>
+
+  <div class="msg-card" data-type="sys" onclick="showToast('查看系统公告', 'info')">
+    <div class="msg-icon sys">&#x1F4E2;</div>
+    <div class="msg-body">
+      <div class="msg-title">
+        <span>系统公告</span>
+        <span class="msg-time">08:00</span>
+      </div>
+      <div class="msg-content">今日大风黄色预警，无人机巡航暂停，请加强地面巡视。</div>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-tab">
+  <div class="tab-item" onclick="location.href='M01-首页.html'">
+    <span class="tab-icon">&#x1F3E0;</span>
+    <span>首页</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M03-工单.html'">
+    <span class="tab-icon">&#x1F4CB;</span>
+    <span>工单</span>
+    <span class="tab-badge">3</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M07-视频.html'">
+    <span class="tab-icon">&#x1F4F9;</span>
+    <span>视频</span>
+  </div>
+  <div class="tab-item active">
+    <span class="tab-icon">&#x1F4AC;</span>
+    <span>消息</span>
+    <span class="tab-badge">2</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M04-我的.html'">
+    <span class="tab-icon">&#x1F464;</span>
+    <span>我的</span>
+  </div>
+</nav>
+
+<script>
+function filterMsg(el, type) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.msg-card').forEach(card => {
+    if (type === 'all') {
+      card.style.display = '';
+    } else {
+      card.style.display = card.dataset.type === type ? '' : 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>

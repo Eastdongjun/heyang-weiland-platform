@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>导航中心 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg-deep: #0A1628;
+  --bg: #0A1628;
+  --bg2: #0D1B3E;
+  --header: #0A1628;
+  --header-line: rgba(0, 191, 255, 0.12);
+  --card: #0F1E37;
+  --card-hover: #1A2D4A;
+  --bg-card: rgba(15, 30, 55, 0.85);
+  --bg-card2: rgba(10, 28, 60, 0.6);
+  --border: rgba(0, 191, 255, 0.15);
+  --border-bright: rgba(0, 191, 255, 0.3);
+  --accent: #00BFFF;
+  --accent-dim: rgba(0, 191, 255, 0.6);
+  --accent-bright: #66D9FF;
+  --accent-glow: rgba(0, 191, 255, 0.25);
+  --cyan: #00E5CC;
+  --text: #FFFFFF;
+  --text2: #CCCCCC;
+  --text3: #8899AA;
+  --danger: #FF3366;
+  --danger-glow: rgba(255, 51, 102, 0.3);
+  --warn: #FFCC00;
+  --info: #4A9AD2;
+  --green: #00CC99;
+  --font-num: "DIN Pro", "SF Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-deep); color:var(--text); font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; width:100vw; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+/* ===== HEADER ===== */
+.header { height:64px; background:linear-gradient(180deg,rgba(10,22,40,0.98) 0%,rgba(13,27,62,0.92) 100%); border-bottom:1px solid var(--header-line); display:flex; align-items:center; justify-content:space-between; padding:0 32px; flex-shrink:0; position:relative; }
+.header::after { content:''; position:absolute; bottom:-1px; left:15%; right:15%; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:.6; }
+.header-left { flex:1; }
+.header-center { position:absolute; left:50%; transform:translateX(-50%); text-align:center; line-height:1.3; }
+.header-title { font-size:20px; font-weight:700; letter-spacing:4px; background:linear-gradient(90deg,var(--text),var(--accent-bright)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.header-sub { font-size:11px; color:var(--text3); letter-spacing:2px; margin-top:1px; }
+.header-right { display:flex; align-items:center; gap:20px; }
+.header-time { font-size:16px; font-weight:600; font-family:"SF Mono",monospace; color:var(--text2); }
+.header-time.flash { color:var(--accent-bright); text-shadow:0 0 12px var(--accent-glow); }
+.header-weather { font-size:13px; color:var(--text3); display:flex; align-items:center; gap:4px; }
+.user-info { display:flex; align-items:center; gap:8px; font-size:13px; }
+.user-avatar { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent-dim),var(--accent)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--bg); }
+.role-toggle { display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:6px; background:rgba(0,191,255,0.06); border:1px solid var(--border); font-size:12px; color:var(--text3); cursor:pointer; transition:all .2s; }
+.role-toggle:hover { border-color:var(--accent); color:var(--accent); }
+.role-badge { padding:1px 6px; border-radius:3px; font-size:10px; font-weight:600; background:var(--border); color:var(--text3); }
+.role-badge.admin { background:var(--accent); color:var(--bg); }
+.logout-btn { padding:4px 12px; border:1px solid var(--border); border-radius:6px; background:transparent; color:var(--text3); font-size:12px; cursor:pointer; transition:all .2s; }
+.logout-btn:hover { border-color:var(--danger); color:var(--danger); }
+
+/* ===== MAIN ===== */
+.main { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 40px 20px; min-height:0; position:relative; }
+.main::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(0,191,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,191,255,0.02) 1px,transparent 1px); background-size:50px 50px; pointer-events:none; }
+
+/* ===== WELCOME ===== */
+.welcome { text-align:center; margin-bottom:28px; position:relative; z-index:1; }
+.welcome h2 { font-size:22px; font-weight:600; letter-spacing:2px; }
+.welcome p { font-size:12px; color:var(--text3); letter-spacing:1px; margin-top:2px; }
+
+/* ===== CARD GRID ===== */
+.card-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; width:100%; max-width:960px; position:relative; z-index:1; }
+
+.nav-card {
+  background: linear-gradient(160deg, var(--card) 0%, #0F1E37 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 16px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+}
+@keyframes cardIn { to { opacity:1; transform:translateY(0); } }
+.nav-card:nth-child(1) { animation-delay:30ms; }
+.nav-card:nth-child(2) { animation-delay:70ms; }
+.nav-card:nth-child(3) { animation-delay:110ms; }
+.nav-card:nth-child(4) { animation-delay:150ms; }
+.nav-card:nth-child(5) { animation-delay:190ms; }
+.nav-card:nth-child(6) { animation-delay:230ms; }
+.nav-card:nth-child(7) { animation-delay:270ms; }
+.nav-card:nth-child(8) { animation-delay:310ms; }
+.nav-card:nth-child(9) { animation-delay:350ms; }
+.nav-card:nth-child(10) { animation-delay:390ms; }
+.nav-card:nth-child(11) { animation-delay:430ms; }
+
+.nav-card::before { content:''; position:absolute; top:-1px; left:20%; right:20%; height:2px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; transition:opacity .3s; border-radius:12px 12px 0 0; }
+.nav-card:hover { transform:translateY(-4px); border-color:rgba(0,191,255,0.25); box-shadow:0 12px 32px rgba(0,0,0,0.5),0 0 24px var(--accent-glow); }
+.nav-card:hover::before { opacity:1; }
+.nav-card:active { transform:translateY(-1px); }
+
+.nav-card::after { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle at center,var(--accent-glow),transparent 60%); opacity:0; transition:opacity .4s; pointer-events:none; }
+.nav-card:hover::after { opacity:1; }
+
+.card-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; position:relative; flex-shrink:0; transition:transform .3s; }
+.nav-card:hover .card-icon { transform:scale(1.12); }
+.card-icon.c1 { background:linear-gradient(135deg,rgba(232,74,74,0.25),rgba(232,74,74,0.08)); }
+.card-icon.c2 { background:linear-gradient(135deg,rgba(0,191,255,0.25),rgba(0,191,255,0.08)); }
+.card-icon.c3 { background:linear-gradient(135deg,rgba(74,154,210,0.25),rgba(74,154,210,0.08)); }
+.card-icon.c4 { background:linear-gradient(135deg,rgba(255,204,0,0.25),rgba(255,204,0,0.08)); }
+.card-icon.c5 { background:linear-gradient(135deg,rgba(0,191,255,0.25),rgba(0,191,255,0.08)); }
+.card-icon.c6 { background:linear-gradient(135deg,rgba(204,204,204,0.25),rgba(204,204,204,0.08)); }
+.card-icon.c7 { background:linear-gradient(135deg,rgba(160,120,210,0.25),rgba(160,120,210,0.08)); }
+.card-icon.c8 { background:linear-gradient(135deg,rgba(100,120,140,0.25),rgba(100,120,140,0.08)); }
+.card-icon.c9 { background:linear-gradient(135deg,rgba(72,120,180,0.25),rgba(72,120,180,0.08)); }
+.card-icon.c10 { background:linear-gradient(135deg,rgba(180,100,160,0.25),rgba(180,100,160,0.08)); }
+.card-icon.c11 { background:linear-gradient(135deg,rgba(200,80,60,0.25),rgba(200,80,60,0.08)); }
+
+.card-name { font-size:14px; font-weight:600; letter-spacing:.5px; margin-top:2px; }
+.card-desc { font-size:11px; color:var(--text3); line-height:1.4; max-width:160px; }
+
+.card-stats { display:flex; gap:8px; margin-top:2px; font-size:10px; color:var(--text3); font-family:"SF Mono",monospace; }
+.card-stats span { display:flex; align-items:center; gap:2px; }
+.card-stats .up { color:var(--cyan); }
+.card-stats .warn { color:var(--warn); }
+
+.card-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; border-radius:9px; background:linear-gradient(135deg,var(--danger),#ff6b6b); color:#fff; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; font-family:var(--font-num); padding:0 5px; box-shadow:0 2px 6px var(--danger-glow); }
+
+/* Admin-only cards */
+.admin-only { display:none !important; }
+.admin-only.visible { display:flex !important; }
+.nav-card.admin-visible { border-color:rgba(212,175,55,0.3); }
+.nav-card.admin-visible::before { background:linear-gradient(90deg,transparent,#d4af37,transparent); }
+
+/* ===== FOOTER ===== */
+.page-footer { text-align:center; padding:12px; font-size:11px; color:var(--text3); flex-shrink:0; opacity:.6; }
+
+/* ===== TOAST ===== */
+.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-16px); padding:10px 24px; border-radius:8px; background:rgba(15,30,55,0.95); border:1px solid var(--border); color:var(--text2); font-size:13px; opacity:0; pointer-events:none; transition:all .3s; z-index:1000; backdrop-filter:blur(8px); }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Popup */
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(26,147,111,0.92); }
+.pc-toast.error { background:rgba(231,76,60,0.92); }
+.pc-toast.info { background:rgba(52,152,219,0.92); }
+@keyframes pcToastIn { from{opacity:0;transform:translateY(-20px) scale(.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+@keyframes pcToastOut { to{opacity:0;transform:translateY(-20px) scale(.95)} }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(10,28,60,0.96); border:1px solid rgba(0,191,255,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:var(--accent); margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:var(--text2); line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,var(--accent),#0099CC); color:var(--bg); }
+.pc-btn-secondary { background:rgba(0,191,255,0.08); color:var(--accent); border:1px solid rgba(0,191,255,0.25); }
+
+/* Focus */
+*:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:2px; }
+
+/* Responsive */
+@media (max-width:1024px) { .card-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:640px) { .card-grid { grid-template-columns:1fr; } .header { padding:0 16px; } .header-title { font-size:14px; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left"></div>
+  <div class="header-center">
+    <div class="header-title">合阳洽川湿地智慧管理平台</div>
+    <div class="header-sub">HEYANG WETLAND · INTELLIGENT MANAGEMENT</div>
+  </div>
+  <div class="header-right">
+    <span class="header-weather">⛅ 24°C · 晴</span>
+    <span class="header-time" id="clock">--:--:--</span>
+    <div class="user-info">
+      <div class="user-avatar">张</div>
+      <span>张三 · <span id="roleLabel">广播员</span></span>
+    </div>
+    <button class="role-toggle" onclick="toggleRole()">
+      角色: <span class="role-badge" id="roleBadge">普通用户</span>
+    </button>
+    <button class="logout-btn" onclick="location.href='P01-登录.html'">退出</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="welcome">
+    <h2>功能导航</h2>
+    <p>请选择需要进入的管理模块</p>
+  </div>
+
+  <div class="card-grid">
+    <!-- 1 智慧安防 -->
+    <a class="nav-card" href="P04-视频监控.html">
+      <div class="card-icon c1">🛡️</div>
+      <div class="card-name">智慧安防</div>
+      <div class="card-desc">视频监控 · 入侵检测 · 越界告警</div>
+      <div class="card-stats"><span class="up">● 在线 14/16</span></div>
+    </a>
+
+    <!-- 2 环境监测 -->
+    <a class="nav-card" href="P08-环境监测.html">
+      <div class="card-icon c2">🌱</div>
+      <div class="card-name">环境监测</div>
+      <div class="card-desc">温度湿度 · 风速雨量 · 水质</div>
+      <div class="card-stats"><span>26°C</span><span class="up">62%</span><span>3m/s</span></div>
+    </a>
+
+    <!-- 3 告警统计 -->
+    <a class="nav-card" href="P06-告警中心.html">
+      <div class="card-icon c4">
+        <span class="card-badge">3</span>
+        ⚠️
+      </div>
+      <div class="card-name">告警统计</div>
+      <div class="card-desc">实时告警 · 分级处理 · 历史查询</div>
+      <div class="card-stats"><span class="warn">待处理 12</span><span>处理中 28</span></div>
+    </a>
+
+    <!-- 4 无人机管理 -->
+    <a class="nav-card" href="P05-无人机管理.html">
+      <div class="card-icon c5">🛸</div>
+      <div class="card-name">无人机管理</div>
+      <div class="card-desc">直播画面 · 状态监控 · 机场</div>
+      <div class="card-stats"><span class="up">在线 3/3</span><span>本月 156次</span></div>
+    </a>
+
+    <!-- 5 巡逻管理 -->
+    <a class="nav-card" href="P11-设备台账.html">
+      <div class="card-icon c6">⛵</div>
+      <div class="card-name">巡逻管理</div>
+      <div class="card-desc">巡查轨迹 · 人员定位 · 考勤</div>
+      <div class="card-stats"><span class="up">在岗 16人</span></div>
+    </a>
+
+    <!-- 6 数据分析 -->
+    <a class="nav-card" href="P07-数据统计.html">
+      <div class="card-icon c7">📊</div>
+      <div class="card-name">数据分析</div>
+      <div class="card-desc">趋势预测 · 报表 · 决策支持</div>
+      <div class="card-stats"><span class="up">完成率 96.8%</span></div>
+    </a>
+
+    <!-- 7 GIS地图 -->
+    <a class="nav-card" href="P03-大屏GIS地图.html">
+      <div class="card-icon c9">🌍</div>
+      <div class="card-name">GIS地图</div>
+      <div class="card-desc">实时地图 · 设备定位 · 电子围栏</div>
+      <div class="card-stats"><span class="up">设备 98台</span><span>在线 87</span></div>
+    </a>
+
+    <!-- 8 VR湿地 -->
+    <a class="nav-card" href="P10-VR查看.html">
+      <div class="card-icon c10">🎥</div>
+      <div class="card-name">VR湿地</div>
+      <div class="card-desc">沉浸式巡览 · 全景视角</div>
+      <div class="card-stats"><span>8个场景</span></div>
+    </a>
+
+    <!-- 9 应急指挥 -->
+    <a class="nav-card" href="P09-应急管理.html">
+      <div class="card-icon c11">🚨</div>
+      <div class="card-name">应急指挥</div>
+      <div class="card-desc">突发事件 · 调度 · 资源配置</div>
+      <div class="card-stats"><span class="warn">待处理 5</span><span>本月 28件</span></div>
+    </a>
+
+    <!-- 10 设备管理 (仅管理员) -->
+    <a class="nav-card admin-only" href="P13-工单调度.html">
+      <div class="card-icon c3">⚙️</div>
+      <div class="card-name">设备管理</div>
+      <div class="card-desc">设备台账 · 状态监控 · 维护</div>
+      <div class="card-stats"><span>故障 3台</span></div>
+    </a>
+
+    <!-- 11 系统配置 (仅管理员) -->
+    <a class="nav-card admin-only" href="javascript:void(0)" onclick="showModal('系统配置','此功能仅管理员可访问，请联系管理员获取权限。')">
+      <div class="card-icon c8">🔧</div>
+      <div class="card-name">系统配置</div>
+      <div class="card-desc">用户权限 · 参数 · 日志</div>
+    </a>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="page-footer">© 2026 合阳洽川湿地智慧管理平台</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- Popup -->
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+
+<script>
+// Clock
+function updateClock(){var n=new Date,p=function(x){return String(x).padStart(2,'0')},e=document.getElementById('clock');e.textContent=p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());if(n.getSeconds()===0){e.classList.add('flash');setTimeout(function(){e.classList.remove('flash')},300)}}
+setInterval(updateClock,1000);updateClock();
+
+// Toast
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
+
+// Popup
+function showToastP(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700)}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active')}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active')}
+
+// Role toggle
+var isAdmin=false;
+function toggleRole(){isAdmin=!isAdmin;var b=document.getElementById('roleBadge'),l=document.getElementById('roleLabel'),c=document.querySelectorAll('.admin-only');if(isAdmin){b.textContent='管理员';b.classList.add('admin');l.textContent='管理员';c.forEach(function(e){e.classList.add('visible');e.classList.add('admin-visible')});localStorage.setItem('userRole','admin');showToast('已切换为管理员视角')}else{b.textContent='普通用户';b.classList.remove('admin');l.textContent='广播员';c.forEach(function(e){e.classList.remove('visible');e.classList.remove('admin-visible')});localStorage.setItem('userRole','user');showToast('已切换为普通用户视角')}}
+
+// Init role
+(function(){var r=localStorage.getItem('userRole');if(r==='admin'&&!isAdmin)toggleRole()})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>工单 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg: #f0f4f3;
+  --surface: #ffffff;
+  --primary: #1a936f;
+  --primary-dark: #147a5c;
+  --primary-light: rgba(26, 147, 111, 0.08);
+  --danger: #e74c3c;
+  --danger-light: rgba(231, 76, 60, 0.08);
+  --warning: #f39c12;
+  --warning-light: rgba(243, 156, 18, 0.08);
+  --info: #3498db;
+  --info-light: rgba(52, 152, 219, 0.08);
+  --text: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border: #e8eceb;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Header */
+.page-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header h1 { font-size: 18px; font-weight: 700; }
+
+.back-arrow {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #fff;
+  cursor: pointer;
+  margin-left: -8px;
+}
+
+/* Filter tabs */
+.filter-bar {
+  background: var(--surface);
+  padding: 10px 16px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-tab {
+  padding: 6px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.filter-tab.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Order list */
+.order-list { padding: 12px 16px; }
+
+.order-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.order-card:active { transform: scale(0.98); }
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.order-id {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: "SF Mono", monospace;
+}
+
+.order-time {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.order-type {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.order-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+.badge-level-1 { background: var(--danger-light); color: var(--danger); }
+.badge-level-2 { background: var(--warning-light); color: var(--warning); }
+.badge-level-3 { background: var(--info-light); color: var(--info); }
+
+.badge-status-pending { background: var(--warning-light); color: var(--warning); }
+.badge-status-processing { background: var(--info-light); color: var(--info); }
+
+.btn-action {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 36px;
+}
+
+/* Detail page overlay */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.detail-overlay.active { display: flex; }
+
+.detail-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 16px;
+  padding-top: calc(16px + env(safe-area-inset-top));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-header h2 { font-size: 17px; font-weight: 700; flex: 1; }
+
+.detail-body { padding: 16px; }
+
+.detail-section {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+
+.detail-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.detail-row .label { color: var(--text-secondary); }
+.detail-row .value { color: var(--text); font-weight: 600; }
+
+/* Timeline */
+.timeline { padding-left: 8px; }
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 8px 0;
+  position: relative;
+}
+.timeline-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+  margin-top: 3px;
+  box-shadow: 0 0 0 3px rgba(26,147,111,0.15);
+}
+.timeline-dot.done { background: var(--primary); }
+.timeline-dot.pending { background: var(--border); box-shadow: none; }
+
+.timeline-content { flex: 1; }
+.timeline-time { font-size: 12px; color: var(--text-tertiary); margin-bottom: 2px; }
+.timeline-text { font-size: 14px; color: var(--text); }
+
+/* Action buttons at bottom of detail */
+.detail-actions {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 14px 0;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 14px 0;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+/* Dispose form overlay */
+.dispose-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 300;
+  display: none;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.dispose-overlay.active { display: flex; }
+
+.textarea-field {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
+}
+.textarea-field:focus { border-color: var(--primary); }
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-add {
+  aspect-ratio: 1;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  background: var(--bg);
+  min-height: 100px;
+}
+
+.result-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-option {
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-weight: 500;
+}
+.result-option:active { transform: scale(0.98); }
+.result-option.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* Bottom tab */
+.bottom-tab {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 6px;
+  z-index: 100;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+  min-width: 56px;
+}
+.tab-item.active { color: var(--primary); }
+.tab-icon { font-size: 24px; line-height: 1; }
+
+.tab-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 18px; height: 18px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "SF Mono", monospace;
+  padding: 0 5px;
+}
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.m-toast-wrap { position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.m-toast { padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; color:#fff; animation:mToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.m-toast.success { background:linear-gradient(135deg,#1a936f,#147a5c); }
+.m-toast.error { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+.m-toast.info { background:linear-gradient(135deg,#3498db,#2980b9); }
+@keyframes mToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes mToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.m-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; display:none; align-items:center; justify-content:center; padding:16px; }
+.m-modal-overlay.active { display:flex; }
+.m-modal { background:#fff; border-radius:14px; padding:20px; width:100%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.15); }
+.m-modal-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
+.m-modal-body { font-size:14px; color:#666; line-height:1.6; margin-bottom:20px; }
+.m-modal-actions { display:flex; gap:10px; }
+.m-btn { flex:1; padding:13px 0; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; text-align:center; }
+.m-btn-primary { background:linear-gradient(135deg,#1a936f,#147a5c); color:#fff; }
+.m-btn-secondary { background:#f0f4f3; color:#666; }
+.m-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998; display:none; align-items:flex-end; justify-content:center; }
+.m-sheet-overlay.active { display:flex; }
+.m-sheet { background:#fff; border-radius:16px 16px 0 0; padding:16px; width:100%; max-width:500px; transform:translateY(100%); transition:transform .3s ease; }
+.m-sheet-overlay.active .m-sheet { transform:translateY(0); }
+.m-sheet-title { font-size:16px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e8eceb; }
+.m-sheet-item { padding:14px; text-align:center; font-size:15px; color:#1a1a1a; cursor:pointer; border-bottom:1px solid #f0f4f3; }
+.m-sheet-item:last-child { border-bottom:none; color:#e74c3c; font-weight:600; }
+.m-loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.m-loading-overlay.active { display:flex; }
+.m-loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:mSpin 0.8s linear infinite; }
+.m-loading-text { color:#fff; font-size:15px; font-weight:600; }
+@keyframes mSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="mToastWrap" class="m-toast-wrap"></div>
+<div id="mModalOverlay" class="m-modal-overlay" onclick="if(event.target===this)closeMModal()"><div class="m-modal"><div id="mModalTitle" class="m-modal-title">提示</div><div id="mModalBody" class="m-modal-body">内容</div><div class="m-modal-actions"><button class="m-btn m-btn-secondary" onclick="closeMModal()">取消</button><button id="mModalConfirm" class="m-btn m-btn-primary">确认</button></div></div></div>
+<div id="mSheetOverlay" class="m-sheet-overlay" onclick="if(event.target===this)closeMSheet()"><div class="m-sheet"><div id="mSheetTitle" class="m-sheet-title">选择操作</div><div id="mSheetBody"></div></div></div>
+<div id="mLoadingOverlay" class="m-loading-overlay"><div class="m-loading-spinner"></div><div id="mLoadingText" class="m-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('mToastWrap');var t=document.createElement('div');t.className='m-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='mToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('mModalTitle').textContent=title||'提示';document.getElementById('mModalBody').textContent=body||'';var btn=document.getElementById('mModalConfirm');btn.onclick=function(){closeMModal();if(onConfirm)onConfirm();};document.getElementById('mModalOverlay').classList.add('active');}
+function closeMModal(){document.getElementById('mModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showActionSheet(title,items){document.getElementById('mSheetTitle').textContent=title||'选择操作';var b=document.getElementById('mSheetBody');b.innerHTML='';items.forEach(function(it){var d=document.createElement('div');d.className='m-sheet-item';d.textContent=it.text;d.onclick=function(){closeMSheet();if(it.action)it.action();};b.appendChild(d);});document.getElementById('mSheetOverlay').classList.add('active');}
+function closeMSheet(){document.getElementById('mSheetOverlay').classList.remove('active');}
+function showLoading(msg){document.getElementById('mLoadingText').textContent=msg||'加载中...';document.getElementById('mLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('mLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<!-- ORDER LIST PAGE -->
+<div id="listPage">
+  <header class="page-header">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="back-arrow" onclick="history.back()">&#x2039;</span>
+      <h1>工单管理</h1>
+    </div>
+    <span style="font-size:13px;opacity:0.9;">共 8 单</span>
+  </header>
+
+  <div class="filter-bar">
+    <div class="filter-tab active" onclick="filterOrders(this,'all')">全部</div>
+    <div class="filter-tab" onclick="filterOrders(this,'pending')">待接单</div>
+    <div class="filter-tab" onclick="filterOrders(this,'processing')">处理中</div>
+    <div class="filter-tab" onclick="filterOrders(this,'done')">已完成</div>
+  </div>
+
+  <div class="order-list">
+    <div class="order-card" data-status="pending" onclick="openDetail()">
+      <div class="order-header">
+        <span class="order-id">WO-20260512-001</span>
+        <span class="order-time">10:42</span>
+      </div>
+      <div class="order-type">北门保护区入口 · 非法闯入</div>
+      <div class="order-meta">
+        <span>📍 距离 240m</span>
+        <span>👤 系统派发</span>
+      </div>
+      <div class="order-footer">
+        <span class="badge badge-level-1">一级</span>
+        <span class="badge badge-status-pending">待接单</span>
+      </div>
+    </div>
+
+    <div class="order-card" data-status="processing" onclick="openDetail()">
+      <div class="order-header">
+        <span class="order-id">WO-20260512-002</span>
+        <span class="order-time">10:38</span>
+      </div>
+      <div class="order-type">C区采样点3号 · 水质异常</div>
+      <div class="order-meta">
+        <span>📍 距离 580m</span>
+        <span>👤 已接单</span>
+      </div>
+      <div class="order-footer">
+        <span class="badge badge-level-2">二级</span>
+        <span class="badge badge-status-processing">处理中</span>
+      </div>
+    </div>
+
+    <div class="order-card" data-status="pending" onclick="openDetail()">
+      <div class="order-header">
+        <span class="order-id">WO-20260512-005</span>
+        <span class="order-time">09:30</span>
+      </div>
+      <div class="order-type">南区栈道 · 日常巡检</div>
+      <div class="order-meta">
+        <span>📍 距离 1.2km</span>
+        <span>👤 系统派发</span>
+      </div>
+      <div class="order-footer">
+        <span class="badge badge-level-3">三级</span>
+        <span class="badge badge-status-pending">待接单</span>
+      </div>
+    </div>
+
+    <div class="order-card" data-status="done">
+      <div class="order-header">
+        <span class="order-id">WO-20260512-006</span>
+        <span class="order-time">08:45</span>
+      </div>
+      <div class="order-type">气象监测站 · 风速超限</div>
+      <div class="order-meta">
+        <span>📍 距离 2.1km</span>
+        <span>👤 赵六处置</span>
+      </div>
+      <div class="order-footer">
+        <span class="badge badge-level-3">三级</span>
+        <span class="badge" style="background:rgba(26,147,111,0.1);color:var(--primary);">已完成</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL PAGE -->
+<div class="detail-overlay" id="detailPage">
+  <div class="detail-header">
+    <span class="back-arrow" onclick="closeDetail()">&#x2039;</span>
+    <h2>工单详情</h2>
+    <span style="font-size:13px;opacity:0.9;">WO-20260512-001</span>
+  </div>
+
+  <div class="detail-body">
+    <div class="detail-section">
+      <div class="detail-section-title">📋 告警信息</div>
+      <div class="detail-row"><span class="label">告警类型</span><span class="value">非法闯入</span></div>
+      <div class="detail-row"><span class="label">告警等级</span><span class="value" style="color:var(--danger);">一级</span></div>
+      <div class="detail-row"><span class="label">告警位置</span><span class="value">北门保护区入口</span></div>
+      <div class="detail-row"><span class="label">告警时间</span><span class="value">2026-05-12 10:42:18</span></div>
+      <div class="detail-row"><span class="label">当前状态</span><span class="value" style="color:var(--warning);">待接单</span></div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">📍 处置时间线</div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="timeline-time">10:42:18</div>
+            <div class="timeline-text">系统生成告警工单</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-content">
+            <div class="timeline-time">10:42:20</div>
+            <div class="timeline-text">推送至应急指挥平台</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot pending"></div>
+          <div class="timeline-content">
+            <div class="timeline-time">--:--:--</div>
+            <div class="timeline-text">等待巡逻员接单</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">🗺 位置信息</div>
+      <div class="detail-row"><span class="label">经纬度</span><span class="value">34.9876°N, 110.2345°E</span></div>
+      <div class="detail-row"><span class="label">距离当前</span><span class="value">240m</span></div>
+      <div style="margin-top:10px;">
+        <button class="btn-primary" style="width:100%;" onclick="location.href='M03-01-导航.html'">🧭 一键导航到现场</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-actions">
+    <button class="btn-secondary" onclick="closeDetail()">返回</button>
+    <button class="btn-primary" onclick="openDispose()">接单处置</button>
+  </div>
+</div>
+
+<!-- DISPOSE PAGE -->
+<div class="dispose-overlay" id="disposePage">
+  <div class="detail-header">
+    <span class="back-arrow" onclick="closeDispose()">&#x2039;</span>
+    <h2>处置工单</h2>
+    <span></span>
+  </div>
+
+  <div class="detail-body">
+    <div class="detail-section">
+      <div class="detail-section-title">📷 现场拍照</div>
+      <div class="photo-grid">
+        <div class="photo-add" onclick="showActionSheet('选择操作', [{text:'拍照', action:function(){showToast('已唤起相机', 'success')}}, {text:'从相册选择', action:function(){showToast('已打开相册', 'success')}}, {text:'取消', action:function(){}}])">+</div>
+        <div class="photo-add" onclick="showActionSheet('选择操作', [{text:'拍照', action:function(){showToast('已唤起相机', 'success')}}, {text:'从相册选择', action:function(){showToast('已打开相册', 'success')}}, {text:'取消', action:function(){}}])">+</div>
+        <div class="photo-add" onclick="showActionSheet('选择操作', [{text:'拍照', action:function(){showToast('已唤起相机', 'success')}}, {text:'从相册选择', action:function(){showToast('已打开相册', 'success')}}, {text:'取消', action:function(){}}])">+</div>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">✏️ 处置描述</div>
+      <textarea class="textarea-field" placeholder="请描述处置情况，最少10字..."></textarea>
+    </div>
+
+    <div class="detail-section">
+      <div class="detail-section-title">✅ 处置结果</div>
+      <div class="result-options">
+        <button class="result-option" onclick="selectResult(this)">已处理</button>
+        <button class="result-option" onclick="selectResult(this)">误报</button>
+        <button class="result-option" onclick="selectResult(this)">需支援</button>
+        <button class="result-option" onclick="selectResult(this)">无法到达</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-actions">
+    <button class="btn-secondary" onclick="closeDispose()">取消</button>
+    <button class="btn-primary" onclick="submitDispose()">提交处置</button>
+  </div>
+</div>
+
+<!-- BOTTOM TAB -->
+<nav class="bottom-tab">
+  <div class="tab-item" onclick="location.href='M01-首页.html'">
+    <span class="tab-icon">&#x1F3E0;</span>
+    <span>首页</span>
+  </div>
+  <div class="tab-item active">
+    <span class="tab-icon">&#x1F4CB;</span>
+    <span>工单</span>
+    <span class="tab-badge">3</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M07-视频.html'">
+    <span class="tab-icon">&#x1F4F9;</span>
+    <span>视频</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M02-消息.html'">
+    <span class="tab-icon">&#x1F4AC;</span>
+    <span>消息</span>
+    <span class="tab-badge">2</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M04-我的.html'">
+    <span class="tab-icon">&#x1F464;</span>
+    <span>我的</span>
+  </div>
+</nav>
+
+<script>
+function filterOrders(el, type) {
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.order-card').forEach(card => {
+    if (type === 'all') {
+      card.style.display = '';
+    } else {
+      card.style.display = card.dataset.status === type ? '' : 'none';
+    }
+  });
+}
+
+function openDetail() {
+  document.getElementById('detailPage').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('detailPage').classList.remove('active');
+}
+
+function openDispose() {
+  document.getElementById('disposePage').classList.add('active');
+}
+
+function closeDispose() {
+  document.getElementById('disposePage').classList.remove('active');
+}
+
+function selectResult(el) {
+  document.querySelectorAll('.result-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function submitDispose() {
+  showToast('处置已提交！等待审核。', 'info');
+  closeDispose();
+  closeDetail();
+}
+</script>
+</body>
+</html>

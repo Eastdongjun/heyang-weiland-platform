@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>应急预案详情 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg-deep: #0A1628;
+  --bg-card: rgba(15, 30, 55, 0.85);
+  --bg-card2: rgba(10, 28, 60, 0.6);
+  --border: rgba(0, 191, 255, 0.15);
+  --border-bright: rgba(0, 191, 255, 0.3);
+  --accent: #00BFFF;
+  --accent-dim: rgba(0, 191, 255, 0.12);
+  --accent-glow: rgba(0, 191, 255, 0.25);
+  --cyan: #00E5CC;
+  --danger: #FF3366;
+  --danger-glow: rgba(255, 51, 102, 0.3);
+  --warn: #FFCC00;
+  --warn-dim: rgba(255, 204, 0, 0.12);
+  --green: #00CC99;
+  --green-dim: rgba(0, 204, 153, 0.12);
+  --orange: #FF8C00;
+  --text: #FFFFFF;
+  --text2: #CCCCCC;
+  --text3: #8899AA;
+  --font-num: "DIN Pro", "SF Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-deep); color:var(--text); font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; width:100vw; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+/* ===== TOP BAR ===== */
+.top-bar { height:64px; background:linear-gradient(180deg,rgba(10,22,40,0.98),rgba(10,22,40,0.85)); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; flex-shrink:0; position:relative; z-index:100; }
+.top-bar::after { content:''; position:absolute; bottom:-1px; left:10%; right:10%; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:.6; }
+.top-left { display:flex; align-items:center; gap:16px; }
+.top-title { font-size:20px; font-weight:700; letter-spacing:4px; background:linear-gradient(90deg,#fff,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.top-title-sub { font-size:10px; color:var(--text3); letter-spacing:1px; margin-top:2px; }
+.top-right { display:flex; align-items:center; gap:20px; font-size:13px; color:var(--text2); }
+.top-right .exit-link { color:var(--text3); font-size:12px; text-decoration:none; padding:4px 10px; border:1px solid var(--border); border-radius:4px; }
+.back-btn { width:36px; height:36px; border:1px solid var(--border); background:var(--accent-dim); border-radius:6px; color:var(--accent); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.back-btn:hover { border-color:var(--accent); background:rgba(0,191,255,0.2); }
+
+/* ===== MAIN ===== */
+.main { flex:1; display:flex; flex-direction:column; min-height:0; position:relative; }
+.main-row { flex:1; display:flex; min-height:0; gap:8px; padding:8px; height:calc(100vh - 64px - 52px); }
+
+/* ===== PANELS ===== */
+.panel { background:var(--bg-card); border:1px solid var(--border); border-radius:6px; padding:12px 14px; }
+.panel-title { font-size:12px; font-weight:600; color:var(--accent); letter-spacing:1px; margin-bottom:10px; display:flex; align-items:center; gap:6px; text-transform:uppercase; }
+.panel-title::before { content:''; width:3px; height:12px; background:var(--accent); border-radius:2px; }
+.panel-title .badge { margin-left:auto; font-size:10px; background:var(--accent-dim); color:var(--accent); padding:1px 8px; border-radius:10px; font-weight:400; }
+
+/* ===== LEFT PANEL ===== */
+.left-panel { flex:1; min-width:0; padding:10px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; border:1px solid var(--border); border-radius:4px; }
+.left-panel::-webkit-scrollbar { width:3px; }
+.left-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* ===== RIGHT PANEL ===== */
+.right-panel { width:340px; flex-shrink:0; padding:10px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; border:1px solid var(--border); border-radius:4px; }
+.right-panel::-webkit-scrollbar { width:3px; }
+.right-panel::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* ===== PLAN HEADER ===== */
+.plan-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.plan-icon-wrap { width:48px; height:48px; border-radius:8px; background:var(--accent-dim); border:1px solid var(--border-bright); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+.plan-header-info { flex:1; min-width:0; }
+.plan-header-info h2 { font-size:18px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.plan-header-info .plan-meta-row { display:flex; gap:16px; font-size:11px; color:var(--text3); }
+.plan-header-info .plan-meta-row span { display:flex; align-items:center; gap:4px; }
+
+/* ===== PLAN CONTENT ===== */
+.plan-content { flex:1; min-height:0; display:flex; flex-direction:column; gap:10px; }
+.plan-section { background:var(--bg-card2); border:1px solid var(--border); border-radius:4px; padding:10px 12px; }
+.plan-section h3 { font-size:12px; font-weight:600; color:var(--accent); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.plan-section h3::before { content:''; width:3px; height:10px; background:var(--accent); border-radius:2px; }
+.plan-section p, .plan-section li { font-size:12px; color:var(--text2); line-height:1.8; }
+.plan-section ol { padding-left:18px; }
+
+/* ===== STATUS BADGES ===== */
+.badge-status { display:inline-block; padding:2px 10px; border-radius:10px; font-size:10px; font-weight:600; }
+.badge-status.enabled { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,204,153,0.2); }
+.badge-status.draft { background:var(--accent-dim); color:var(--accent); border:1px solid var(--border); }
+.badge-status.archived { background:rgba(136,153,170,0.15); color:var(--text3); border:1px solid rgba(136,153,170,0.2); }
+
+/* ===== INFO ROWS ===== */
+.info-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:12px; }
+.info-row:last-child { border-bottom:none; }
+.info-label { color:var(--text3); display:flex; align-items:center; gap:6px; }
+.info-value { color:var(--text2); font-weight:500; text-align:right; }
+
+/* ===== VERSION HISTORY ===== */
+.version-list { display:flex; flex-direction:column; gap:4px; }
+.version-item { display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:var(--bg-card2); border:1px solid var(--border); border-radius:4px; font-size:11px; }
+.version-item .ver-num { font-family:var(--font-num); color:var(--accent); font-weight:600; }
+.version-item .ver-date { color:var(--text3); font-size:10px; }
+.version-item .ver-status { font-size:10px; }
+.version-item .ver-status.current { color:var(--green); }
+
+/* ===== RESPONSIBLE PERSON ===== */
+.contact-card { display:flex; align-items:center; gap:10px; padding:8px 10px; background:var(--bg-card2); border:1px solid var(--border); border-radius:4px; }
+.contact-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0; }
+.contact-detail { flex:1; min-width:0; }
+.contact-detail .c-name { font-size:12px; font-weight:600; color:var(--text); }
+.contact-detail .c-role { font-size:10px; color:var(--text3); }
+.contact-detail .c-phone { font-size:11px; color:var(--accent); font-family:var(--font-num); }
+
+/* ===== ATTACHMENT ===== */
+.attach-list { display:flex; flex-direction:column; gap:4px; }
+.attach-item { display:flex; align-items:center; gap:8px; padding:6px 8px; background:var(--bg-card2); border:1px solid var(--border); border-radius:4px; font-size:11px; cursor:pointer; transition:all .2s; }
+.attach-item:hover { border-color:var(--accent); background:var(--accent-dim); }
+.attach-item .attach-icon { color:var(--accent); font-size:14px; }
+.attach-item .attach-name { flex:1; min-width:0; color:var(--text2); }
+.attach-item .attach-size { font-size:10px; color:var(--text3); }
+
+/* ===== BOTTOM NAVIGATION ===== */
+.bottom-nav {
+  height: 52px;
+  background: linear-gradient(180deg, transparent, #0A1628 30%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 12px;
+}
+.nav-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text3);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.25s;
+  min-width: 56px;
+  text-decoration: none;
+}
+.nav-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--border);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+.nav-btn.active {
+  background: rgba(0, 191, 255, 0.1);
+  border-color: var(--border-bright);
+  color: var(--accent);
+}
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 30%; right: 30%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+.nav-icon svg { width: 16px; height: 16px; display:block; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition: transform 0.25s; }
+.nav-btn:hover .nav-icon svg { transform: scale(1.12); }
+
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+::-webkit-scrollbar-track { background:transparent; }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(0,204,153,0.92); border:1px solid rgba(0,204,153,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,77,79,0.4); }
+.pc-toast.info { background:rgba(0,191,255,0.92); border:1px solid rgba(0,191,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(15,30,55,0.96); border:1px solid rgba(0,191,255,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#00BFFF; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#fff; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#00BFFF,#0099CC); color:#fff; }
+.pc-btn-secondary { background:rgba(0,191,255,0.08); color:#00BFFF; border:1px solid rgba(0,191,255,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(0,191,255,0.15); border-top-color:#00BFFF; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#00BFFF; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="top-bar">
+  <div class="top-left" style="width:240px;">
+    <button class="back-btn" onclick="history.back()">&#x2039;</button>
+  </div>
+  <div style="position:absolute;left:50%;transform:translateX(-50%);text-align:center;">
+    <div class="top-title">洽川湿地应急预案</div>
+    <div class="top-title-sub">快速响应 · 统一调度</div>
+  </div>
+  <div class="top-right">
+    <span style="font-size:13px;color:var(--accent);font-family:var(--font-num);">预案编号 EP-2026-001</span>
+    <a href="P01-登录.html" class="exit-link">退出</a>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="main-row">
+
+  <!-- ====== LEFT PANEL ====== -->
+  <aside class="left-panel">
+
+    <!-- Plan Header Info -->
+    <div class="panel">
+      <div class="plan-header">
+        <div class="plan-icon-wrap">🌊</div>
+        <div class="plan-header-info">
+          <h2>合阳湿地公园洪涝灾害应急预案</h2>
+          <div class="plan-meta-row">
+            <span>📅 版本：V2.1</span>
+            <span>🕐 最后更新：2026-03-15</span>
+            <span>🏢 编制单位：应急管理部</span>
+          </div>
+        </div>
+        <span class="badge-status enabled">● 已启用</span>
+      </div>
+    </div>
+
+    <!-- Plan Content -->
+    <div class="plan-content">
+
+      <div class="plan-section">
+        <h3>1. 适用范围</h3>
+        <p>本预案适用于合阳洽川湿地公园范围内因持续强降雨、河道溢滩导致的洪涝灾害，以及由此引发的次生、衍生灾害的应急处置工作。</p>
+      </div>
+
+      <div class="plan-section">
+        <h3>2. 应急组织架构</h3>
+        <p>总指挥部、救援行动组、人员疏散组、物资保障组、通信保障组、医疗救护组、环境监测组。</p>
+      </div>
+
+      <div class="plan-section">
+        <h3>3. 响应流程</h3>
+        <ol>
+          <li>接到气象预警后，指挥部立即启动预案</li>
+          <li>通知各小组负责人 30 分钟内到达指定位置</li>
+          <li>启用应急通讯频道，实时报告水位</li>
+          <li>根据水位级别启动相应级别响应（Ⅰ/Ⅱ/Ⅲ级）</li>
+          <li>救援组按区域开展人员搜救与疏散工作</li>
+          <li>物资保障组调配沙袋、水泵、应急照明等物资</li>
+        </ol>
+      </div>
+
+      <div class="plan-section">
+        <h3>4. 应急保障</h3>
+        <p>应急通信保障：卫星电话 2 部、对讲机 20 部、应急广播系统覆盖全园区。物资储备：沙袋 5000 个、水泵 15 台、冲锋舟 4 艘、发电机 6 台。</p>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ====== RIGHT PANEL ====== -->
+  <aside class="right-panel">
+
+    <!-- Plan Status -->
+    <div class="panel">
+      <div class="panel-title">◎ 预案状态</div>
+      <div class="info-row"><span class="info-label">📌 当前状态</span><span class="info-value"><span class="badge-status enabled">已启用</span></span></div>
+      <div class="info-row"><span class="info-label">📊 预案等级</span><span class="info-value" style="color:var(--danger);font-weight:600;">Ⅰ级（最高）</span></div>
+      <div class="info-row"><span class="info-label">📅 生效日期</span><span class="info-value">2026-01-01</span></div>
+      <div class="info-row"><span class="info-label">📅 到期日期</span><span class="info-value">2026-12-31</span></div>
+      <div class="info-row"><span class="info-label">🔄 演练频次</span><span class="info-value">每季度 1 次</span></div>
+    </div>
+
+    <!-- Responsible Person -->
+    <div class="panel">
+      <div class="panel-title">👤 责任人</div>
+      <div class="contact-card">
+        <div class="contact-avatar" style="background:linear-gradient(135deg,#00BFFF,rgba(0,191,255,0.2));color:#fff;">张</div>
+        <div class="contact-detail">
+          <div class="c-name">张卫国</div>
+          <div class="c-role">应急指挥部 · 总指挥</div>
+          <div class="c-phone">138****0001</div>
+        </div>
+      </div>
+      <div style="margin-top:6px;">
+        <div class="contact-card">
+          <div class="contact-avatar" style="background:linear-gradient(135deg,#00E5CC,rgba(0,229,204,0.2));color:#fff;">李</div>
+          <div class="contact-detail">
+            <div class="c-name">李洪涛</div>
+            <div class="c-role">防汛调度科 · 副指挥</div>
+            <div class="c-phone">138****0002</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Version History -->
+    <div class="panel">
+      <div class="panel-title">📋 版本历史</div>
+      <div class="version-list">
+        <div class="version-item">
+          <span class="ver-num">V2.1</span>
+          <span class="ver-date">2026-03-15</span>
+          <span class="ver-status current">当前版本</span>
+        </div>
+        <div class="version-item">
+          <span class="ver-num">V2.0</span>
+          <span class="ver-date">2026-01-01</span>
+          <span style="font-size:10px;color:var(--text3);">修订组织架构</span>
+        </div>
+        <div class="version-item">
+          <span class="ver-num">V1.3</span>
+          <span class="ver-date">2025-09-20</span>
+          <span style="font-size:10px;color:var(--text3);">更新联络方式</span>
+        </div>
+        <div class="version-item">
+          <span class="ver-num">V1.0</span>
+          <span class="ver-date">2025-03-10</span>
+          <span style="font-size:10px;color:var(--text3);">初始版本</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attachments -->
+    <div class="panel">
+      <div class="panel-title">📎 相关附件</div>
+      <div class="attach-list">
+        <div class="attach-item" onclick="showToast('开始下载...','info')">
+          <span class="attach-icon">📄</span>
+          <span class="attach-name">洪涝灾害应急预案_全文.pdf</span>
+          <span class="attach-size">2.3 MB</span>
+        </div>
+        <div class="attach-item" onclick="showToast('开始下载...','info')">
+          <span class="attach-icon">📊</span>
+          <span class="attach-name">应急物资清单_2026.xlsx</span>
+          <span class="attach-size">856 KB</span>
+        </div>
+        <div class="attach-item" onclick="showToast('开始下载...','info')">
+          <span class="attach-icon">📝</span>
+          <span class="attach-name">应急演练记录_2026Q1.docx</span>
+          <span class="attach-size">1.1 MB</span>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <a class="nav-btn" href="P03-大屏GIS地图.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2C7 2 3 6.5 3 12c0 2 .5 3.5 1.5 5L12 22l7.5-5c1-1.5 1.5-3 1.5-5 0-5.5-4-10-9-10z"/></svg></span><span>GIS地图</span></a>
+  <a class="nav-btn" href="P04-视频监控.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="16" height="14" rx="2"/><polygon points="23,7 19,10 19,14 23,17"/></svg></span><span>视频监控</span></a>
+  <a class="nav-btn" href="P05-无人机管理.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L9 7l-4 1 3 2.5L7 15l5-3 5 3-1-4.5L19 8l-4-1z"/><line x1="12" y1="18" x2="12" y2="2"/></svg></span><span>无人机</span></a>
+  <a class="nav-btn" href="P08-环境监测.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 8C15 5 9 5 7 8c-3 4 0 9 5 12 5-3 8-8 5-12z"/><line x1="12" y1="20" x2="12" y2="11"/></svg></span><span>环境监测</span></a>
+  <a class="nav-btn" href="P06-告警中心.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span>告警中心</span></a>
+  <a class="nav-btn" href="P07-数据统计.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="14" rx="1"/><rect x="17" y="4" width="4" height="18" rx="1"/></svg></span><span>数据统计</span></a>
+  <a class="nav-btn active" href="P09-应急管理.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.5 4 10.5 9 11 5-.5 9-5.5 9-11V7l-9-5z"/><line x1="12" y1="8" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/></svg></span><span>应急管理</span></a>
+  <a class="nav-btn" href="P10-VR查看.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><line x1="12" y1="9" x2="12" y2="15"/></svg></span><span>VR查看</span></a>
+</nav>
+</main>
+
+<script>
+// ===== CLOCK =====
+function updateClock(){
+  var n=new Date,w=['日','一','二','三','四','五','六'];
+  try{var c=document.getElementById('clockSec');if(c)c.textContent=n.toLocaleTimeString('zh-CN',{hour12:false});}catch(e){}
+  try{var d=document.getElementById('headerDate');if(d)d.textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';}catch(e){}
+}
+setInterval(updateClock,1000);updateClock();
+</script>
+</body>
+</html>

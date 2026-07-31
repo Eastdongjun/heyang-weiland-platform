@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>工作量统计 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg:#f0f4f3; --surface:#ffffff; --primary:#1a936f; --primary-dark:#147a5c; --primary-light:rgba(26,147,111,0.08);
+  --danger:#e74c3c; --warning:#f39c12; --info:#3498db; --text:#1a1a1a; --text-secondary:#666666; --text-tertiary:#999999;
+  --border:#e8eceb; --shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; min-height:100vh; padding-bottom:calc(12px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch; }
+.page-header { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); color:#fff; display:flex; align-items:center; gap:12px; }
+.back-arrow { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:22px; color:#fff; cursor:pointer; margin-left:-8px; }
+.page-header h1 { font-size:18px; font-weight:700; }
+
+.summary-card { background:var(--surface); border-radius:14px; padding:16px; margin:12px 16px; box-shadow:var(--shadow); }
+.summary-title { font-size:14px; font-weight:700; margin-bottom:12px; }
+.summary-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.summary-item { background:var(--bg); border-radius:10px; padding:12px; text-align:center; }
+.summary-num { font-size:24px; font-weight:800; color:var(--primary); font-family:"SF Mono",monospace; }
+.summary-label { font-size:12px; color:var(--text-secondary); margin-top:4px; }
+
+.chart-card { background:var(--surface); border-radius:14px; padding:16px; margin:0 16px 12px; box-shadow:var(--shadow); }
+.chart-title { font-size:14px; font-weight:700; margin-bottom:12px; }
+.chart-bar { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.chart-label { font-size:12px; color:var(--text-secondary); width:50px; text-align:right; flex-shrink:0; }
+.chart-track { flex:1; background:var(--bg); border-radius:4px; height:16px; overflow:hidden; }
+.chart-fill { height:100%; border-radius:4px; }
+.chart-value { font-size:12px; color:var(--text-secondary); width:30px; text-align:left; flex-shrink:0; }
+
+.rank-card { background:var(--surface); border-radius:14px; padding:16px; margin:0 16px 12px; box-shadow:var(--shadow); }
+.rank-row { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.rank-row:last-child { border-bottom:none; }
+.rank-num { width:24px; height:24px; border-radius:50%; background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text-secondary); flex-shrink:0; }
+.rank-num.top { background:var(--primary); color:#fff; }
+.rank-name { flex:1; font-size:14px; }
+.rank-score { font-size:14px; font-weight:700; color:var(--primary); }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.m-toast-wrap { position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.m-toast { padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; color:#fff; animation:mToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.m-toast.success { background:linear-gradient(135deg,#1a936f,#147a5c); }
+.m-toast.error { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+.m-toast.info { background:linear-gradient(135deg,#3498db,#2980b9); }
+@keyframes mToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes mToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.m-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; display:none; align-items:center; justify-content:center; padding:16px; }
+.m-modal-overlay.active { display:flex; }
+.m-modal { background:#fff; border-radius:14px; padding:20px; width:100%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.15); }
+.m-modal-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
+.m-modal-body { font-size:14px; color:#666; line-height:1.6; margin-bottom:20px; }
+.m-modal-actions { display:flex; gap:10px; }
+.m-btn { flex:1; padding:13px 0; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; text-align:center; }
+.m-btn-primary { background:linear-gradient(135deg,#1a936f,#147a5c); color:#fff; }
+.m-btn-secondary { background:#f0f4f3; color:#666; }
+.m-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998; display:none; align-items:flex-end; justify-content:center; }
+.m-sheet-overlay.active { display:flex; }
+.m-sheet { background:#fff; border-radius:16px 16px 0 0; padding:16px; width:100%; max-width:500px; transform:translateY(100%); transition:transform .3s ease; }
+.m-sheet-overlay.active .m-sheet { transform:translateY(0); }
+.m-sheet-title { font-size:16px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e8eceb; }
+.m-sheet-item { padding:14px; text-align:center; font-size:15px; color:#1a1a1a; cursor:pointer; border-bottom:1px solid #f0f4f3; }
+.m-sheet-item:last-child { border-bottom:none; color:#e74c3c; font-weight:600; }
+.m-loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.m-loading-overlay.active { display:flex; }
+.m-loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:mSpin 0.8s linear infinite; }
+.m-loading-text { color:#fff; font-size:15px; font-weight:600; }
+@keyframes mSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="mToastWrap" class="m-toast-wrap"></div>
+<div id="mModalOverlay" class="m-modal-overlay" onclick="if(event.target===this)closeMModal()"><div class="m-modal"><div id="mModalTitle" class="m-modal-title">提示</div><div id="mModalBody" class="m-modal-body">内容</div><div class="m-modal-actions"><button class="m-btn m-btn-secondary" onclick="closeMModal()">取消</button><button id="mModalConfirm" class="m-btn m-btn-primary">确认</button></div></div></div>
+<div id="mSheetOverlay" class="m-sheet-overlay" onclick="if(event.target===this)closeMSheet()"><div class="m-sheet"><div id="mSheetTitle" class="m-sheet-title">选择操作</div><div id="mSheetBody"></div></div></div>
+<div id="mLoadingOverlay" class="m-loading-overlay"><div class="m-loading-spinner"></div><div id="mLoadingText" class="m-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('mToastWrap');var t=document.createElement('div');t.className='m-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='mToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('mModalTitle').textContent=title||'提示';document.getElementById('mModalBody').textContent=body||'';var btn=document.getElementById('mModalConfirm');btn.onclick=function(){closeMModal();if(onConfirm)onConfirm();};document.getElementById('mModalOverlay').classList.add('active');}
+function closeMModal(){document.getElementById('mModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showActionSheet(title,items){document.getElementById('mSheetTitle').textContent=title||'选择操作';var b=document.getElementById('mSheetBody');b.innerHTML='';items.forEach(function(it){var d=document.createElement('div');d.className='m-sheet-item';d.textContent=it.text;d.onclick=function(){closeMSheet();if(it.action)it.action();};b.appendChild(d);});document.getElementById('mSheetOverlay').classList.add('active');}
+function closeMSheet(){document.getElementById('mSheetOverlay').classList.remove('active');}
+function showLoading(msg){document.getElementById('mLoadingText').textContent=msg||'加载中...';document.getElementById('mLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('mLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+<style>.m-back-btn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:1000;padding:8px 14px;background:rgba(26,147,111,0.9);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;align-items:center;gap:4px;}.m-back-btn::before{content:'←';font-size:15px;}</style><a href="M04-我的.html" class="m-back-btn">返回我的</a>
+<header class="page-header">
+  <span class="back-arrow" onclick="history.back()">&#x2039;</span>
+  <h1>工作量统计</h1>
+</header>
+
+<div class="summary-card">
+  <div class="summary-title">📊 本月概览</div>
+  <div class="summary-grid">
+    <div class="summary-item"><div class="summary-num">42</div><div class="summary-label">工单数</div></div>
+    <div class="summary-item"><div class="summary-num">38h</div><div class="summary-label">巡逻时长</div></div>
+    <div class="summary-item"><div class="summary-num">12.5</div><div class="summary-label">平均响应(分)</div></div>
+    <div class="summary-item"><div class="summary-num">98%</div><div class="summary-label">完成率</div></div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <div class="chart-title">📈 近7天工单量</div>
+  <div class="chart-bar"><span class="chart-label">05-06</span><div class="chart-track"><div class="chart-fill" style="width:60%;background:var(--primary)"></div></div><span class="chart-value">6</span></div>
+  <div class="chart-bar"><span class="chart-label">05-07</span><div class="chart-track"><div class="chart-fill" style="width:80%;background:var(--primary)"></div></div><span class="chart-value">8</span></div>
+  <div class="chart-bar"><span class="chart-label">05-08</span><div class="chart-track"><div class="chart-fill" style="width:40%;background:var(--primary)"></div></div><span class="chart-value">4</span></div>
+  <div class="chart-bar"><span class="chart-label">05-09</span><div class="chart-track"><div class="chart-fill" style="width:100%;background:var(--primary)"></div></div><span class="chart-value">10</span></div>
+  <div class="chart-bar"><span class="chart-label">05-10</span><div class="chart-track"><div class="chart-fill" style="width:50%;background:var(--primary)"></div></div><span class="chart-value">5</span></div>
+  <div class="chart-bar"><span class="chart-label">05-11</span><div class="chart-track"><div class="chart-fill" style="width:70%;background:var(--primary)"></div></div><span class="chart-value">7</span></div>
+  <div class="chart-bar"><span class="chart-label">05-12</span><div class="chart-track"><div class="chart-fill" style="width:20%;background:var(--warning)"></div></div><span class="chart-value">2</span></div>
+</div>
+
+<div class="rank-card">
+  <div class="chart-title">🏆 本月排名</div>
+  <div class="rank-row">
+    <div class="rank-num top">1</div>
+    <div class="rank-name">张三</div>
+    <div class="rank-score">98分</div>
+  </div>
+  <div class="rank-row">
+    <div class="rank-num top">2</div>
+    <div class="rank-name">李四</div>
+    <div class="rank-score">95分</div>
+  </div>
+  <div class="rank-row">
+    <div class="rank-num top">3</div>
+    <div class="rank-name">王五</div>
+    <div class="rank-score">92分</div>
+  </div>
+  <div class="rank-row">
+    <div class="rank-num">4</div>
+    <div class="rank-name">赵六</div>
+    <div class="rank-score">88分</div>
+  </div>
+  <div class="rank-row">
+    <div class="rank-num">5</div>
+    <div class="rank-name">钱七</div>
+    <div class="rank-score">85分</div>
+  </div>
+</div>
+</body>
+</html>

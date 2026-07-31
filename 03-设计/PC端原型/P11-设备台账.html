@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>设备台账 - 合阳湿地后台管理</title>
+<style>
+:root {
+  --bg: #f0f2f5;
+  --sidebar: #001529;
+  --header: #ffffff;
+  --card: #ffffff;
+  --hover: #e6f7ff;
+  --border: #e8e8e8;
+  --accent: #1890ff;
+  --text: #333333;
+  --text2: #666666;
+  --text3: #999999;
+  --danger: #ff4d4f;
+  --warn: #faad14;
+  --success: #52c41a;
+  --info: #1890ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:"PingFang SC","Microsoft YaHei",sans-serif; height:100vh; overflow:hidden; }
+
+/* Header */
+.header {
+  height:50px; background:var(--header); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; padding:0 20px; flex-shrink:0;
+}
+.header-left { display:flex; align-items:center; gap:12px; font-size:16px; font-weight:600; }
+.header-left a { color:#666; text-decoration:none; font-size:13px; }
+.header-left a:hover { color:var(--accent); }
+.header-right { display:flex; align-items:center; gap:16px; font-size:13px; color:var(--text2); }
+.header-right span { cursor:pointer; }
+.header-right span:hover { color:#1890ff; }
+
+/* Layout */
+.container { display:flex; height:calc(100vh - 50px); }
+
+/* Sidebar */
+.sidebar {
+  width:200px; background:var(--sidebar); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:12px 0; overflow-y:auto;
+}
+.sidebar-group { margin-bottom:8px; }
+.sidebar-title {
+  font-size:11px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:1px;
+  padding:8px 16px; font-weight:600;
+}
+.sidebar-item {
+  display:flex; align-items:center; gap:10px; padding:9px 16px; font-size:13px;
+  color:var(--text2); cursor:pointer; transition:background .15s; text-decoration:none;
+}
+.sidebar-item:hover { background:#002140; color:#fff; }
+.sidebar-item.active { background:rgba(24,144,255,0.15); color:#1890ff; border-left:3px solid #1890ff; padding-left:13px; }
+
+/* Content */
+.content { flex:1; padding:16px 20px; overflow-y:auto; }
+.content-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.content-hd h2 { font-size:18px; font-weight:600; }
+
+/* Buttons */
+.btn { font-size:12px; padding:6px 14px; border-radius:3px; cursor:pointer; border:none; font-family:inherit; }
+.btn-primary { background:var(--accent); color:#fff; font-weight:600; }
+.btn-primary:hover { opacity:.9; }
+.btn-secondary { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+.btn-danger { background:rgba(204,68,68,0.12); color:var(--danger); border:1px solid rgba(204,68,68,0.25); }
+
+/* Stats */
+.stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:14px; }
+.stat { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:14px; }
+.stat-num { font-size:22px; font-weight:700; color:var(--accent); }
+.stat-label { font-size:11px; color:var(--text3); margin-top:4px; }
+
+/* Filter */
+.filter {
+  display:flex; gap:10px; align-items:center; margin-bottom:14px;
+  padding:10px; background:var(--card); border:1px solid var(--border); border-radius:4px;
+}
+.filter select, .filter input {
+  background:var(--bg); border:1px solid var(--border); color:var(--text);
+  padding:5px 10px; border-radius:3px; font-size:12px; font-family:inherit; outline:none;
+}
+.filter input { width:180px; }
+.filter label { font-size:12px; color:var(--text3); }
+
+/* Table */
+.table-wrap { background:var(--card); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th {
+  background:#e6f0ff; color:var(--accent); font-size:12px; font-weight:600;
+  text-align:left; padding:10px 12px; border-bottom:1px solid var(--border);
+}
+tbody td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text2); }
+tbody tr:hover { background:rgba(90,170,138,0.03); }
+tbody tr:hover td { color:var(--text); }
+
+/* Tags */
+.tag { font-size:11px; padding:2px 8px; border-radius:3px; font-weight:600; display:inline-block; }
+.tag-green { background:rgba(68,170,102,0.12); color:var(--success); }
+.tag-red   { background:rgba(204,68,68,0.12); color:var(--danger); }
+.tag-yellow{ background:rgba(204,153,34,0.12); color:var(--warn); }
+.tag-blue  { background:rgba(68,136,170,0.12); color:var(--info); }
+
+.status-dot { width:6px; height:6px; border-radius:50%; display:inline-block; margin-right:5px; }
+.status-dot.on { background:var(--success); }
+.status-dot.off { background:var(--danger); }
+
+.action { display:flex; gap:6px; }
+.action a { font-size:12px; color:var(--text2); text-decoration:none; cursor:pointer; }
+.action a:hover { color:var(--accent); text-decoration:underline; }
+.action a.del:hover { color:var(--danger); }
+
+/* Pagination */
+.pager { display:flex; justify-content:flex-end; gap:4px; margin-top:12px; }
+.pager span, .pager a {
+  padding:4px 10px; border:1px solid var(--border); border-radius:3px; font-size:12px;
+  color:var(--text2); cursor:pointer; text-decoration:none;
+}
+.pager a:hover { border-color:var(--accent); color:var(--accent); }
+.pager span.active { background:var(--accent); color:#fff; border-color:var(--accent); font-weight:600; }
+/* Modal */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999; align-items:center; justify-content:center; }
+.modal-overlay.show { display:flex; }
+.modal { background:var(--card); border:1px solid var(--border); border-radius:4px; width:480px; max-width:90vw; }
+.modal-hd { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border); }
+.modal-hd h3 { font-size:15px; }
+.modal-close { background:none; border:none; color:var(--text2); font-size:18px; cursor:pointer; }
+.modal-close:hover { color:var(--accent); }
+.modal-bd { padding:16px; }
+.form-row { margin-bottom:12px; }
+.form-row label { display:block; font-size:12px; color:var(--text3); margin-bottom:4px; }
+.form-row input, .form-row select, .form-row textarea { width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:3px; font-size:13px; font-family:inherit; outline:none; }
+.form-row textarea { min-height:60px; resize:vertical; }
+.modal-ft { display:flex; justify-content:flex-end; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(26,147,111,0.92); border:1px solid rgba(120,210,180,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,77,79,0.4); }
+.pc-toast.info { background:rgba(52,152,219,0.92); border:1px solid rgba(64,169,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(6,30,30,0.96); border:1px solid rgba(120,210,180,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#78d2b4; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#e0f0f0; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#78d2b4,#5aaa8a); color:#020a0a; }
+.pc-btn-secondary { background:rgba(120,210,180,0.08); color:#78d2b4; border:1px solid rgba(120,210,180,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(2,10,10,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(120,210,180,0.15); border-top-color:#78d2b4; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#78d2b4; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <span>&#x1F4A7; 合阳湿地后台管理</span>
+    <a href="P02-导航页.html">&#x2190; 返回导航</a>
+  </div>
+  <div class="header-right">
+    <span>2026-05-12 14:32:18</span>
+    <span>管理员</span>
+    <span onclick="location.href='P01-登录.html'">退出</span>
+  </div>
+</header>
+
+<div class="container">
+  <aside class="sidebar">
+    <div class="sidebar-group">
+      <div class="sidebar-title">设备管理</div>
+      <a class="sidebar-item active" href="P11-设备台账.html">&#x1F4F9; 设备台账</a>
+      <a class="sidebar-item" href="P19-设备分组.html">📁 设备分组</a>
+      <a class="sidebar-item" href="P20-流量维保.html">📊 流量维保</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-title">工单调度</div>
+      <a class="sidebar-item" href="P13-工单调度.html">&#x1F4CB; 工单调度</a>
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-title">用户权限</div>
+      <a class="sidebar-item" href="P12-用户管理.html">👤 用户管理</a>
+      <a class="sidebar-item" href="P17-角色权限.html">🔐 角色权限</a>
+    </div>
+    <div class="sidebar-group" style="display:none;">
+      <div class="sidebar-title">巡逻管理</div>
+      <!-- P14/P15 pages deprecated -->
+    </div>
+    <div class="sidebar-group">
+      <div class="sidebar-title">系统运维</div>
+      <a class="sidebar-item" href="P18-系统参数.html">⚙️ 系统参数</a>
+      <a class="sidebar-item" href="P16-操作日志.html">📝 操作日志</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="content-hd">
+      <h2>设备台账</h2>
+      <div>
+        <button class="btn btn-secondary" onclick="showToast('导出CSV', 'success')">&#x1F4E5; 导出</button>
+        <button class="btn btn-primary" onclick="openModal()">+ 添加设备</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num">50</div><div class="stat-label">设备总数</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--success)">39</div><div class="stat-label">在线</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--danger)">11</div><div class="stat-label">离线</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--info)">28</div><div class="stat-label">4G设备</div></div>
+      <div class="stat"><div class="stat-num" style="color:var(--warn)">6</div><div class="stat-label">待维保</div></div>
+    </div>
+
+    <div class="filter">
+      <label>类型</label>
+      <select><option>全部</option><option>摄像头</option><option>激光云台</option><option>传感器</option><option>无人机机场</option></select>
+      <label>状态</label>
+      <select><option>全部</option><option>在线</option><option>离线</option><option>维护中</option></select>
+      <label>区域</label>
+      <select><option>全部区域</option><option>核心保护区</option><option>南岸缓冲区</option><option>北岸实验区</option></select>
+      <input type="text" placeholder="搜索设备名称/编码...">
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox"></th>
+            <th>设备名称</th>
+            <th>编码</th>
+            <th>类型</th>
+            <th>状态</th>
+            <th>网络</th>
+            <th>区域</th>
+            <th>最后心跳</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>湿地入口摄像头</strong></td>
+            <td>CAM-0001</td>
+            <td><span class="tag tag-blue">摄像头</span></td>
+            <td><span class="status-dot on"></span>在线</td>
+            <td>有线</td>
+            <td>核心保护区</td>
+            <td>10秒前</td>
+            <td class="action"><a href="P11-01-设备详情.html">详情</a><a href="P03-大屏GIS地图.html?device=CAM-0001">地图</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>核心区热成像云台</strong></td>
+            <td>CAM-0192</td>
+            <td><span class="tag tag-blue">激光云台</span></td>
+            <td><span class="status-dot on"></span>在线</td>
+            <td>有线</td>
+            <td>核心保护区</td>
+            <td>5秒前</td>
+            <td class="action"><a href="P11-01-设备详情.html">详情</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>南岸4G球机</strong></td>
+            <td>CAM-0203</td>
+            <td><span class="tag tag-green">球机</span></td>
+            <td><span class="status-dot on"></span>在线</td>
+            <td>4G</td>
+            <td>南岸缓冲区</td>
+            <td>30秒前</td>
+            <td class="action"><a href="P11-01-设备详情.html">详情</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>气象监测站-1号</strong></td>
+            <td>SEN-1001</td>
+            <td><span class="tag tag-yellow">传感器</span></td>
+            <td><span class="status-dot off"></span>离线</td>
+            <td>4G</td>
+            <td>北岸实验区</td>
+            <td>2小时前</td>
+            <td class="action"><a href="P03-大屏GIS地图.html?device=SEN-1001">查看</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>无人机机场-A</strong></td>
+            <td>UAV-001</td>
+            <td><span class="tag tag-green">无人机机场</span></td>
+            <td><span class="status-dot on"></span>在线</td>
+            <td>有线</td>
+            <td>核心保护区</td>
+            <td>15秒前</td>
+            <td class="action"><a href="P03-大屏GIS地图.html?device=UAV-001">查看</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>水质采样点-B3</strong></td>
+            <td>SEN-1008</td>
+            <td><span class="tag tag-yellow">传感器</span></td>
+            <td><span class="status-dot on"></span>在线</td>
+            <td>4G</td>
+            <td>南岸缓冲区</td>
+            <td>45秒前</td>
+            <td class="action"><a href="P03-大屏GIS地图.html?device=SEN-1008">查看</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>北门入口枪机</strong></td>
+            <td>CAM-0105</td>
+            <td><span class="tag tag-blue">摄像头</span></td>
+            <td><span class="status-dot off"></span>离线</td>
+            <td>有线</td>
+            <td>北岸实验区</td>
+            <td>1天前</td>
+            <td class="action"><a href="P03-大屏GIS地图.html?device=CAM-0105">查看</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td><strong>声纹识别站</strong></td>
+            <td>AUD-2001</td>
+            <td><span class="tag tag-yellow">传感器</span></td>
+            <td><span class="status-dot on"></span>在线</td>
+            <td>4G</td>
+            <td>核心保护区</td>
+            <td>20秒前</td>
+            <td class="action"><a href="P03-大屏GIS地图.html?device=AUD-2001">查看</a><a>配置</a><a class="del">删除</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pager">
+      <span>共 50 条</span>
+      <a>&lt;</a>
+      <span class="active">1</span>
+      <a>2</a>
+      <a>3</a>
+      <a>4</a>
+      <a>5</a>
+      <a>&gt;</a>
+    </div>
+  </main>
+</div>
+
+<!-- Modal: 新增设备 -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-hd"><h3>新增设备</h3><button class="modal-close" onclick="closeModal()">&times;</button></div>
+    <div class="modal-bd">
+      <div class="form-row"><label>设备名称</label><input type="text" placeholder="请输入设备名称"></div>
+      <div class="form-row"><label>设备编码</label><input type="text" placeholder="如 CAM-0001"></div>
+      <div class="form-row"><label>类型</label><select><option>摄像头</option><option>激光云台</option><option>球机</option><option>传感器</option><option>无人机机场</option></select></div>
+      <div class="form-row"><label>区域</label><select><option>核心保护区</option><option>南岸缓冲区</option><option>北岸实验区</option></select></div>
+      <div class="form-row"><label>网络方式</label><select><option>有线</option><option>4G</option><option>NB-IoT</option></select></div>
+      <div class="form-row"><label>备注</label><textarea placeholder="选填..."></textarea></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="showToast('保存成功', 'success');closeModal()">保存</button>
+    </div>
+  </div>
+</div>
+<script>
+function openModal(){ document.getElementById('modal').classList.add('show'); }
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+document.getElementById('modal').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+</script>
+
+</body>
+</html>

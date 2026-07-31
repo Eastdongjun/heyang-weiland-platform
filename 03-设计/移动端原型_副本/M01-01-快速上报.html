@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>快速上报 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg:#f0f4f3; --surface:#ffffff; --primary:#1a936f; --primary-dark:#147a5c; --primary-light:rgba(26,147,111,0.08);
+  --danger:#e74c3c; --warning:#f39c12; --text:#1a1a1a; --text-secondary:#666666; --text-tertiary:#999999;
+  --border:#e8eceb; --shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; min-height:100vh; padding-bottom:calc(12px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch; }
+.page-header { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); color:#fff; display:flex; align-items:center; gap:12px; }
+.back-arrow { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:22px; color:#fff; cursor:pointer; margin-left:-8px; }
+.page-header h1 { font-size:18px; font-weight:700; }
+
+.form-section { padding:16px; }
+.form-card { background:var(--surface); border-radius:14px; padding:16px; box-shadow:var(--shadow); margin-bottom:12px; }
+.form-title { font-size:14px; font-weight:700; margin-bottom:12px; color:var(--text); }
+
+.photo-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.photo-add { aspect-ratio:1; border:2px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--text-tertiary); cursor:pointer; background:var(--bg); min-height:100px; }
+.photo-item { aspect-ratio:1; border-radius:10px; background:linear-gradient(135deg,#e8f0ec,#d4e6df); display:flex; align-items:center; justify-content:center; font-size:28px; position:relative; }
+.photo-item .del { position:absolute; top:4px; right:4px; width:20px; height:20px; background:var(--danger); color:#fff; border-radius:50%; font-size:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+
+.textarea-field { width:100%; min-height:100px; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-size:15px; resize:vertical; outline:none; font-family:inherit; }
+.textarea-field:focus { border-color:var(--primary); }
+
+.type-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.type-item { padding:10px 4px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text-secondary); font-size:12px; text-align:center; cursor:pointer; font-weight:500; }
+.type-item.selected { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+
+.location-card { display:flex; align-items:center; gap:10px; padding:12px; background:var(--primary-light); border-radius:10px; border:1px solid var(--primary); color:var(--primary); font-size:13px; }
+
+.submit-btn { width:100%; padding:15px 0; border-radius:10px; border:none; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; font-size:16px; font-weight:700; cursor:pointer; margin-top:8px; min-height:48px; }
+.submit-btn:active { transform:scale(0.98); opacity:0.9; }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.m-toast-wrap { position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.m-toast { padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; color:#fff; animation:mToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.m-toast.success { background:linear-gradient(135deg,#1a936f,#147a5c); }
+.m-toast.error { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+.m-toast.info { background:linear-gradient(135deg,#3498db,#2980b9); }
+@keyframes mToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes mToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.m-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; display:none; align-items:center; justify-content:center; padding:16px; }
+.m-modal-overlay.active { display:flex; }
+.m-modal { background:#fff; border-radius:14px; padding:20px; width:100%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.15); }
+.m-modal-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
+.m-modal-body { font-size:14px; color:#666; line-height:1.6; margin-bottom:20px; }
+.m-modal-actions { display:flex; gap:10px; }
+.m-btn { flex:1; padding:13px 0; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; text-align:center; }
+.m-btn-primary { background:linear-gradient(135deg,#1a936f,#147a5c); color:#fff; }
+.m-btn-secondary { background:#f0f4f3; color:#666; }
+.m-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998; display:none; align-items:flex-end; justify-content:center; }
+.m-sheet-overlay.active { display:flex; }
+.m-sheet { background:#fff; border-radius:16px 16px 0 0; padding:16px; width:100%; max-width:500px; transform:translateY(100%); transition:transform .3s ease; }
+.m-sheet-overlay.active .m-sheet { transform:translateY(0); }
+.m-sheet-title { font-size:16px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e8eceb; }
+.m-sheet-item { padding:14px; text-align:center; font-size:15px; color:#1a1a1a; cursor:pointer; border-bottom:1px solid #f0f4f3; }
+.m-sheet-item:last-child { border-bottom:none; color:#e74c3c; font-weight:600; }
+.m-loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.m-loading-overlay.active { display:flex; }
+.m-loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:mSpin 0.8s linear infinite; }
+.m-loading-text { color:#fff; font-size:15px; font-weight:600; }
+@keyframes mSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="mToastWrap" class="m-toast-wrap"></div>
+<div id="mModalOverlay" class="m-modal-overlay" onclick="if(event.target===this)closeMModal()"><div class="m-modal"><div id="mModalTitle" class="m-modal-title">提示</div><div id="mModalBody" class="m-modal-body">内容</div><div class="m-modal-actions"><button class="m-btn m-btn-secondary" onclick="closeMModal()">取消</button><button id="mModalConfirm" class="m-btn m-btn-primary">确认</button></div></div></div>
+<div id="mSheetOverlay" class="m-sheet-overlay" onclick="if(event.target===this)closeMSheet()"><div class="m-sheet"><div id="mSheetTitle" class="m-sheet-title">选择操作</div><div id="mSheetBody"></div></div></div>
+<div id="mLoadingOverlay" class="m-loading-overlay"><div class="m-loading-spinner"></div><div id="mLoadingText" class="m-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('mToastWrap');var t=document.createElement('div');t.className='m-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='mToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('mModalTitle').textContent=title||'提示';document.getElementById('mModalBody').textContent=body||'';var btn=document.getElementById('mModalConfirm');btn.onclick=function(){closeMModal();if(onConfirm)onConfirm();};document.getElementById('mModalOverlay').classList.add('active');}
+function closeMModal(){document.getElementById('mModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showActionSheet(title,items){document.getElementById('mSheetTitle').textContent=title||'选择操作';var b=document.getElementById('mSheetBody');b.innerHTML='';items.forEach(function(it){var d=document.createElement('div');d.className='m-sheet-item';d.textContent=it.text;d.onclick=function(){closeMSheet();if(it.action)it.action();};b.appendChild(d);});document.getElementById('mSheetOverlay').classList.add('active');}
+function closeMSheet(){document.getElementById('mSheetOverlay').classList.remove('active');}
+function showLoading(msg){document.getElementById('mLoadingText').textContent=msg||'加载中...';document.getElementById('mLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('mLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+<style>.m-back-btn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:1000;padding:8px 14px;background:rgba(26,147,111,0.9);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;align-items:center;gap:4px;}.m-back-btn::before{content:'←';font-size:15px;}</style><a href="M01-首页.html" class="m-back-btn">返回首页</a>
+<header class="page-header">
+  <span class="back-arrow" onclick="history.back()">&#x2039;</span>
+  <h1>快速上报</h1>
+</header>
+
+<div class="form-section">
+  <div class="form-card">
+    <div class="form-title">📷 现场拍照 <span style="font-weight:400;color:var(--text-tertiary);">(最多3张)</span></div>
+    <div class="photo-grid">
+      <div class="photo-item">&#x1F4F7;<div class="del">&times;</div></div>
+      <div class="photo-add" onclick="showActionSheet('选择操作', [{text:'拍照', action:function(){showToast('已唤起相机', 'success')}}, {text:'从相册选择', action:function(){showToast('已打开相册', 'success')}}, {text:'取消', action:function(){}}])">+</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">📌 上报类型</div>
+    <div class="type-grid">
+      <div class="type-item selected" onclick="selectType(this)">非法闯入</div>
+      <div class="type-item" onclick="selectType(this)">水质异常</div>
+      <div class="type-item" onclick="selectType(this)">设备故障</div>
+      <div class="type-item" onclick="selectType(this)">火灾隐患</div>
+      <div class="type-item" onclick="selectType(this)">垃圾倾倒</div>
+      <div class="type-item" onclick="selectType(this)">其他</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">✏️ 情况描述</div>
+    <textarea class="textarea-field" placeholder="请描述现场情况，最少10字..."></textarea>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">📍 当前位置</div>
+    <div class="location-card">
+      <span>&#x1F4CD;</span>
+      <span>陕西省渭南市合阳县洽川镇 · 北门保护区入口 240m</span>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="showToast('上报成功！工单号 WO-20260512-009', 'success');setTimeout(function(){location.href='M01-首页.html';},1500);">提交上报</button>
+</div>
+
+<script>
+function selectType(el) {
+  document.querySelectorAll('.type-item').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>

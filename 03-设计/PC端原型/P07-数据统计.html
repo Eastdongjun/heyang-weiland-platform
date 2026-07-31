@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>洽川湿地数据统计 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg-deep: #080E1A;
+  --bg-card: rgba(12, 24, 48, 0.88);
+  --bg-card2: rgba(8, 18, 38, 0.7);
+  --accent: #00BFFF;
+  --accent-dim: rgba(0, 191, 255, 0.1);
+  --accent-glow: rgba(0, 191, 255, 0.2);
+  --cyan: #00E5CC;
+  --danger: #FF3366;
+  --danger-glow: rgba(255, 51, 102, 0.25);
+  --warn: #FFCC00;
+  --green: #00CC99;
+  --purple: #8B5CF6;
+  --text: #FFFFFF;
+  --text2: #C0D0E0;
+  --text3: #6A8099;
+  --border: rgba(0, 191, 255, 0.12);
+  --border-bright: rgba(0, 191, 255, 0.25);
+  --font-num: "DIN Pro", "SF Mono", monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-deep); color:var(--text); font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; width:100vw; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+/* ===== HEADER ===== */
+.top-bar { height:64px; background:linear-gradient(180deg,rgba(8,14,26,0.98),rgba(8,14,26,0.85)); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; flex-shrink:0; position:relative; z-index:100; }
+.top-bar::after { content:''; position:absolute; bottom:-1px; left:10%; right:10%; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:.6; }
+.top-left { display:flex; align-items:center; gap:16px; }
+.top-title { font-size:20px; font-weight:700; letter-spacing:4px; background:linear-gradient(90deg,#fff,var(--accent)); -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; }
+.top-title-sub { font-size:10px; color:var(--text3); letter-spacing:1px; margin-top:2px; }
+.top-center { position:absolute;left:50%;transform:translateX(-50%);text-align:center; }
+.top-right { display:flex; align-items:center; gap:20px; font-size:13px; color:var(--text2); }
+.top-time { font-size:18px; font-weight:600; color:var(--accent); font-family:var(--font-num); }
+
+/* ===== MAIN ===== */
+.main { flex:1; overflow-y:auto; padding:16px 20px 20px; }
+.main::-webkit-scrollbar { width:4px; }
+.main::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+
+/* ===== KPI GLAZE CARDS ===== */
+.kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:16px; }
+.kpi-glaze { position:relative; background:linear-gradient(160deg,rgba(12,24,48,0.9),rgba(8,18,38,0.7)); border:1px solid var(--border); border-radius:10px; padding:16px 14px; overflow:hidden; backdrop-filter:blur(8px); transition:all .35s; cursor:pointer; text-decoration:none; color:inherit; }
+.kpi-glaze::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,rgba(0,191,255,0.3),transparent); opacity:0; transition:opacity .35s; }
+.kpi-glaze:hover { transform:translateY(-3px); border-color:var(--accent); box-shadow:0 12px 40px rgba(0,0,0,0.4),0 0 30px var(--accent-glow); }
+.kpi-glaze:hover::before { opacity:1; }
+.kpi-glaze .kpi-bg-icon { position:absolute; right:-8px; bottom:-8px; font-size:56px; opacity:.04; pointer-events:none; }
+.kpi-glaze .kpi-top { display:flex; justify-content:space-between; align-items:flex-start; }
+.kpi-glaze .kpi-num { font-size:28px; font-weight:700; font-family:var(--font-num); line-height:1; letter-spacing:-.5px; }
+.kpi-glaze .kpi-label { font-size:11px; color:var(--text3); margin-top:6px; letter-spacing:.5px; }
+.kpi-glaze .kpi-footer { display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px solid var(--border); font-size:10px; }
+.kpi-glaze .kpi-trend { display:flex; align-items:center; gap:3px; }
+.kpi-glaze .kpi-trend.up { color:var(--green); }
+.kpi-glaze .kpi-trend.down { color:var(--danger); }
+.kpi-glaze .kpi-trend.flat { color:var(--text3); }
+.kpi-glaze .kpi-sub { color:var(--text3); }
+
+/* ===== DASHBOARD GRID ===== */
+.dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+.dash-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; overflow:hidden; }
+.dash-card-hd { font-size:12px; font-weight:600; color:var(--accent); padding:12px 14px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:6px; letter-spacing:.5px; }
+.dash-card-hd::before { content:''; width:3px;height:11px;background:var(--accent);border-radius:2px; }
+.dash-card-bd { padding:12px 14px; }
+
+/* ===== MONTHLY HORIZONTAL BARS ===== */
+.hbar-group { display:flex; flex-direction:column; gap:6px; }
+.hbar-item { display:flex; align-items:center; gap:8px; }
+.hbar-label { width:36px; font-size:11px; color:var(--text3); font-family:var(--font-num); flex-shrink:0; }
+.hbar-track { flex:1; height:12px; background:var(--bg-card2); border-radius:6px; overflow:hidden; position:relative; }
+.hbar-fill { height:100%; border-radius:6px; position:relative; overflow:hidden; transition:width 1s cubic-bezier(.25,.46,.45,.94); }
+.hbar-fill::after { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent); }
+.hbar-val { width:40px; text-align:right; font-size:11px; font-family:var(--font-num); font-weight:600; flex-shrink:0; }
+
+/* ===== VERTICAL BAR CHART ===== */
+.vbar-wrap { display:flex; align-items:flex-end; gap:6px; height:120px; padding-top:16px; }
+.vbar-group { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.vbar { width:100%; border-radius:4px 4px 0 0; position:relative; min-height:6px; transition:height 1s cubic-bezier(.25,.46,.45,.94); }
+.vbar-val { position:absolute; top:-16px; left:50%; transform:translateX(-50%); font-size:9px; font-family:var(--font-num); white-space:nowrap; }
+.vbar-label { font-size:8px; color:var(--text3); font-family:var(--font-num); }
+
+/* ===== DONUT ===== */
+.donut-wrap { display:flex; align-items:center; gap:16px; }
+.donut-ring { width:96px; height:96px; border-radius:50%; position:relative; flex-shrink:0; }
+.donut-ring::after { content:''; position:absolute; top:6px;left:6px;right:6px;bottom:6px; border-radius:50%; background:var(--bg-deep); }
+.donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:1; text-align:center; }
+.donut-center .dc-num { font-size:16px; font-weight:700; font-family:var(--font-num); color:var(--accent); }
+.donut-center .dc-lbl { font-size:8px; color:var(--text3); margin-top:1px; }
+.donut-legend { flex:1; display:flex; flex-direction:column; gap:4px; }
+.donut-item { display:flex; align-items:center; gap:6px; padding:3px 6px; border-radius:4px; transition:background .2s; cursor:pointer; }
+.donut-item:hover { background:var(--accent-dim); }
+.donut-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.donut-name { font-size:11px; color:var(--text2); flex:1; }
+.donut-pct { font-size:11px; font-family:var(--font-num); font-weight:600; color:var(--accent); }
+
+/* ===== TABLE ===== */
+.dash-table { width:100%; border-collapse:collapse; font-size:12px; }
+.dash-table thead th { text-align:left; padding:9px 10px; color:var(--text3); font-weight:500; border-bottom:1px solid var(--border); background:rgba(0,191,255,0.03); letter-spacing:.5px; font-size:11px; }
+.dash-table tbody td { padding:9px 10px; border-bottom:1px solid rgba(0,191,255,0.06); color:var(--text2); }
+.dash-table tbody tr:last-child td { border-bottom:none; }
+.dash-table tbody tr:nth-child(even) td { background:rgba(0,191,255,0.015); }
+.dash-table tbody tr:hover td { background:rgba(0,191,255,0.04); }
+
+/* ===== GLASS FULL-WIDTH CARD ===== */
+.glass-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav { height:52px; background:linear-gradient(180deg,transparent,#080E1A 30%); display:flex; align-items:center; justify-content:center; gap:4px; flex-shrink:0; padding:0 12px; }
+.nav-btn { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:4px 10px; background:transparent; border:1px solid transparent; border-radius:6px; color:var(--text3); font-size:10px; cursor:pointer; transition:all .25s; min-width:56px; text-decoration:none; }
+.nav-btn:hover { background:var(--accent-dim); border-color:var(--border); color:var(--accent); transform:translateY(-2px); }
+.nav-btn.active { background:rgba(0,191,255,0.1); border-color:var(--border-bright); color:var(--accent); }
+.nav-btn.active::after { content:''; position:absolute; bottom:-1px; left:30%; right:30%; height:2px; background:var(--accent); border-radius:1px; }
+.nav-icon svg { width:16px; height:16px; display:block; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition:transform .25s; }
+.nav-btn:hover .nav-icon svg { transform:scale(1.12); }
+</style>
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="top-left"><span id="headerDate" style="font-size:13px;font-weight:600;color:var(--accent);font-family:var(--font-num);">--年--月--日</span></div>
+  <div class="top-center"><div class="top-title">洽川湿地数据统计</div><div class="top-title-sub">核心指标 · 全域感知</div></div>
+  <div class="top-right"><span class="top-weather">☀️ 26°C · 晴</span><span class="top-time" id="clockSec">--:--:--</span><a href="P02-导航页.html" style="color:var(--text3);font-size:12px;text-decoration:none;padding:4px 10px;border:1px solid var(--border);border-radius:4px;">退出</a></div>
+</header>
+
+<main class="main">
+  <!-- KPI -->
+  <div class="kpi-row">
+    <a class="kpi-glaze" href="P11-设备台账.html"><span class="kpi-bg-icon">⚙️</span><div class="kpi-top"><span class="kpi-num" style="color:var(--accent);">98</span></div><div class="kpi-label">设备总数</div><div class="kpi-footer"><span class="kpi-trend up">▲ +3.2%</span><span class="kpi-sub">在线 87台</span></div></a>
+    <a class="kpi-glaze" href="P06-告警中心.html"><span class="kpi-bg-icon">🔔</span><div class="kpi-top"><span class="kpi-num" style="color:var(--danger);">47</span></div><div class="kpi-label">异常告警</div><div class="kpi-footer"><span class="kpi-trend down">▲ +8.2%</span><span class="kpi-sub">待处理 12</span></div></a>
+    <a class="kpi-glaze" href="P12-用户管理.html"><span class="kpi-bg-icon">👤</span><div class="kpi-top"><span class="kpi-num" style="color:var(--cyan);">42</span></div><div class="kpi-label">在岗人员</div><div class="kpi-footer"><span class="kpi-trend flat">● —</span><span class="kpi-sub">巡逻 16人</span></div></a>
+    <a class="kpi-glaze" href="P13-工单调度.html"><span class="kpi-bg-icon">📋</span><div class="kpi-top"><span class="kpi-num" style="color:var(--warn);">26</span></div><div class="kpi-label">待办工单</div><div class="kpi-footer"><span class="kpi-trend down">▼ -5.2%</span><span class="kpi-sub">处理中 13</span></div></a>
+    <a class="kpi-glaze" href="P05-无人机管理.html"><span class="kpi-bg-icon">🛸</span><div class="kpi-top"><span class="kpi-num" style="color:var(--accent);">156</span></div><div class="kpi-label">巡检次数</div><div class="kpi-footer"><span class="kpi-trend up">▲ +12.5%</span><span class="kpi-sub">累计 1,247</span></div></a>
+    <a class="kpi-glaze" href="P13-工单调度.html"><span class="kpi-bg-icon">✅</span><div class="kpi-top"><span class="kpi-num" style="color:var(--green);">96.8</span><span style="font-size:16px;color:var(--green);font-family:var(--font-num);">%</span></div><div class="kpi-label">完成率</div><div class="kpi-footer"><span class="kpi-trend up">▲ +1.2%</span><span class="kpi-sub">186/180 单</span></div></a>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dash-grid">
+    <!-- 月度工单 -->
+    <div class="dash-card"><div class="dash-card-hd">📋 月度工单统计</div><div class="dash-card-bd">
+      <div class="hbar-group">
+        <div class="hbar-item"><span class="hbar-label">05月</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:linear-gradient(90deg,var(--accent),var(--cyan));"></div></div><span class="hbar-val" style="color:var(--accent);">186</span></div>
+        <div class="hbar-item"><span class="hbar-label">04月</span><div class="hbar-track"><div class="hbar-fill" style="width:87%;background:linear-gradient(90deg,#0099CC,#00BFFF);"></div></div><span class="hbar-val" style="color:var(--accent);">162</span></div>
+        <div class="hbar-item"><span class="hbar-label">03月</span><div class="hbar-track"><div class="hbar-fill" style="width:80%;background:linear-gradient(90deg,#0088BB,#0099CC);"></div></div><span class="hbar-val" style="color:var(--accent);">148</span></div>
+        <div class="hbar-item"><span class="hbar-label">02月</span><div class="hbar-track"><div class="hbar-fill" style="width:73%;background:linear-gradient(90deg,#0077AA,#0088BB);"></div></div><span class="hbar-val" style="color:var(--accent);">135</span></div>
+        <div class="hbar-item"><span class="hbar-label">01月</span><div class="hbar-track"><div class="hbar-fill" style="width:65%;background:linear-gradient(90deg,#006699,#0077AA);"></div></div><span class="hbar-val" style="color:var(--accent);">120</span></div>
+      </div>
+    </div></div>
+
+    <!-- 月度告警 -->
+    <div class="dash-card"><div class="dash-card-hd">🚨 月度告警统计</div><div class="dash-card-bd">
+      <div class="hbar-group">
+        <div class="hbar-item"><span class="hbar-label">05月</span><div class="hbar-track"><div class="hbar-fill" style="width:100%;background:linear-gradient(90deg,var(--danger),#FF6699);"></div></div><span class="hbar-val" style="color:var(--danger);">312</span></div>
+        <div class="hbar-item"><span class="hbar-label">04月</span><div class="hbar-track"><div class="hbar-fill" style="width:91%;background:linear-gradient(90deg,var(--warn),#FFDD44);"></div></div><span class="hbar-val" style="color:var(--warn);">285</span></div>
+        <div class="hbar-item"><span class="hbar-label">03月</span><div class="hbar-track"><div class="hbar-fill" style="width:63%;background:linear-gradient(90deg,var(--accent),var(--cyan));"></div></div><span class="hbar-val" style="color:var(--accent);">198</span></div>
+        <div class="hbar-item"><span class="hbar-label">02月</span><div class="hbar-track"><div class="hbar-fill" style="width:50%;background:linear-gradient(90deg,#0099CC,#00BFFF);"></div></div><span class="hbar-val" style="color:var(--accent);">156</span></div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Second Row -->
+  <div class="dash-grid">
+    <!-- 7日趋势 -->
+    <div class="dash-card"><div class="dash-card-hd">▦ 近7日告警趋势</div><div class="dash-card-bd">
+      <div class="vbar-wrap">
+        <div class="vbar-group"><div class="vbar" style="height:64%;background:linear-gradient(180deg,var(--accent),rgba(0,191,255,0.3));"><span class="vbar-val">18</span></div><span class="vbar-label">15</span></div>
+        <div class="vbar-group"><div class="vbar" style="height:79%;background:linear-gradient(180deg,var(--accent),rgba(0,191,255,0.3));"><span class="vbar-val">22</span></div><span class="vbar-label">16</span></div>
+        <div class="vbar-group"><div class="vbar" style="height:54%;background:linear-gradient(180deg,var(--accent),rgba(0,191,255,0.3));"><span class="vbar-val">15</span></div><span class="vbar-label">17</span></div>
+        <div class="vbar-group"><div class="vbar" style="height:100%;background:linear-gradient(180deg,var(--danger),rgba(255,51,102,0.4));box-shadow:0 0 12px var(--danger-glow);"><span class="vbar-val" style="color:var(--danger);font-weight:600;">28</span></div><span class="vbar-label">18</span></div>
+        <div class="vbar-group"><div class="vbar" style="height:71%;background:linear-gradient(180deg,var(--accent),rgba(0,191,255,0.3));"><span class="vbar-val">20</span></div><span class="vbar-label">19</span></div>
+        <div class="vbar-group"><div class="vbar" style="height:89%;background:linear-gradient(180deg,var(--accent),rgba(0,191,255,0.3));"><span class="vbar-val">25</span></div><span class="vbar-label">20</span></div>
+        <div class="vbar-group"><div class="vbar" style="height:68%;background:linear-gradient(180deg,var(--accent),rgba(0,191,255,0.3));"><span class="vbar-val">19</span></div><span class="vbar-label">21</span></div>
+      </div>
+    </div></div>
+
+    <!-- 事件占比 -->
+    <div class="dash-card"><div class="dash-card-hd">● 事件类型占比</div><div class="dash-card-bd">
+      <div class="donut-wrap">
+        <div class="donut-ring" style="background:conic-gradient(#00BFFF 0deg 135deg,#FFCC00 135deg 207deg,#FF3366 207deg 315deg,#00CC99 315deg 360deg);"><div class="donut-center"><div class="dc-num">42</div><div class="dc-lbl">总计</div></div></div>
+        <div class="donut-legend">
+          <div class="donut-item"><span class="donut-dot" style="background:#00BFFF;"></span><span class="donut-name">非法闯入</span><span class="donut-pct">37.5%</span></div>
+          <div class="donut-item"><span class="donut-dot" style="background:#FFCC00;"></span><span class="donut-name">设备故障</span><span class="donut-pct">20.0%</span></div>
+          <div class="donut-item"><span class="donut-dot" style="background:#FF3366;"></span><span class="donut-name">环境异常</span><span class="donut-pct">30.0%</span></div>
+          <div class="donut-item"><span class="donut-dot" style="background:#00CC99;"></span><span class="donut-name">消防预警</span><span class="donut-pct">12.5%</span></div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- Device Status Table -->
+  <div class="glass-card"><div class="dash-card-hd" style="border-bottom:1px solid var(--border);padding:12px 14px;">⚙️ 设备类型</div>
+    <table class="dash-table">
+      <thead><tr><th>设备类型</th><th>总数</th><th>在线</th><th>离线</th><th>故障</th><th>在线率</th></tr></thead>
+      <tbody>
+        <tr><td>摄像头</td><td>52</td><td style="color:var(--green);">48</td><td>3</td><td style="color:var(--danger);">1</td><td style="color:var(--accent);font-weight:600;">92.3%</td></tr>
+        <tr><td>传感器</td><td>48</td><td style="color:var(--green);">44</td><td>2</td><td style="color:var(--danger);">2</td><td style="color:var(--accent);font-weight:600;">91.7%</td></tr>
+        <tr><td>无人机</td><td>3</td><td style="color:var(--green);">3</td><td>0</td><td>0</td><td style="color:var(--green);font-weight:600;">100%</td></tr>
+        <tr><td>气象站</td><td>4</td><td style="color:var(--green);">4</td><td>0</td><td>0</td><td style="color:var(--green);font-weight:600;">100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a class="nav-btn" href="P03-大屏GIS地图.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2C7 2 3 6.5 3 12c0 2 .5 3.5 1.5 5L12 22l7.5-5c1-1.5 1.5-3 1.5-5 0-5.5-4-10-9-10z"/></svg></span><span>GIS地图</span></a>
+  <a class="nav-btn" href="P04-视频监控.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="16" height="14" rx="2"/><polygon points="23,7 19,10 19,14 23,17"/></svg></span><span>视频监控</span></a>
+  <a class="nav-btn" href="P05-无人机管理.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L9 7l-4 1 3 2.5L7 15l5-3 5 3-1-4.5L19 8l-4-1z"/><line x1="12" y1="18" x2="12" y2="2"/></svg></span><span>无人机</span></a>
+  <a class="nav-btn" href="P08-环境监测.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 8C15 5 9 5 7 8c-3 4 0 9 5 12 5-3 8-8 5-12z"/><line x1="12" y1="20" x2="12" y2="11"/></svg></span><span>环境监测</span></a>
+  <a class="nav-btn" href="P06-告警中心.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span><span>告警中心</span></a>
+  <a class="nav-btn active" href="P07-数据统计.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="14" rx="1"/><rect x="17" y="4" width="4" height="18" rx="1"/></svg></span><span>数据统计</span></a>
+  <a class="nav-btn" href="P09-应急管理.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.5 4 10.5 9 11 5-.5 9-5.5 9-11V7l-9-5z"/><line x1="12" y1="8" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/></svg></span><span>应急管理</span></a>
+  <a class="nav-btn" href="P10-VR查看.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><line x1="12" y1="9" x2="12" y2="15"/></svg></span><span>VR查看</span></a>
+</nav>
+
+<script>
+function updateClock(){var n=new Date;document.getElementById('clockSec').textContent=n.toLocaleTimeString('zh-CN',{hour12:false});document.getElementById('headerDate').textContent=n.getFullYear()+'年'+(n.getMonth()+1)+'月'+n.getDate()+'日';}
+setInterval(updateClock,1000);updateClock();
+</script>
+</body>
+</html>

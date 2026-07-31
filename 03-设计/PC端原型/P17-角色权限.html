@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>角色权限 - 合阳湿地后台管理</title>
+<style>
+:root { --bg:#f0f2f5; --sidebar:#001529; --header:#ffffff; --card:#ffffff; --hover:#e6f7ff; --border:#e8e8e8; --accent:#1890ff; --text:#333333; --text2:#666666; --text3:#999999; --danger:#ff4d4f; --warn:#faad14; --success:#52c41a; --info:#1890ff; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:"PingFang SC","Microsoft YaHei",sans-serif; height:100vh; overflow:hidden; }
+.header { height:50px; background:var(--header); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; }
+.header-left { display:flex; align-items:center; gap:12px; font-size:16px; font-weight:600; }
+.header-left a { color:#666; text-decoration:none; font-size:13px; }
+.header-left a:hover { color:var(--accent); }
+.header-right { display:flex; align-items:center; gap:16px; font-size:13px; color:var(--text2); }
+.header-right span { cursor:pointer; }
+.header-right span:hover { color:#1890ff; }
+.container { display:flex; height:calc(100vh - 50px); }
+.sidebar { width:200px; background:var(--sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:12px 0; overflow-y:auto; }
+.sidebar-group { margin-bottom:8px; }
+.sidebar-title { font-size:11px; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:1px; padding:8px 16px; font-weight:600; }
+.sidebar-item { display:flex; align-items:center; gap:10px; padding:9px 16px; font-size:13px; color:rgba(255,255,255,0.65); cursor:pointer; transition:all .15s; text-decoration:none; }
+.sidebar-item:hover { background:#002140; color:#fff; }
+.sidebar-item.active { background:rgba(24,144,255,0.15); color:#1890ff; border-left:3px solid #1890ff; padding-left:13px; }
+.content { flex:1; padding:16px 20px; overflow-y:auto; }
+.content-hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.content-hd h2 { font-size:18px; font-weight:600; }
+.btn { font-size:12px; padding:6px 14px; border-radius:3px; cursor:pointer; border:none; font-family:inherit; }
+.btn-primary { background:var(--accent); color:#fff; font-weight:600; }
+.btn-secondary { background:transparent; color:var(--text2); border:1px solid var(--border); }
+.btn-danger { background:rgba(204,68,68,0.12); color:var(--danger); border:1px solid rgba(204,68,68,0.25); }
+.filter { display:flex; gap:10px; align-items:center; margin-bottom:14px; padding:10px; background:var(--card); border:1px solid var(--border); border-radius:4px; }
+.filter input { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:5px 10px; border-radius:3px; font-size:12px; font-family:inherit; outline:none; width:200px; }
+.table-wrap { background:var(--card); border:1px solid var(--border); border-radius:4px; overflow:hidden; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th { background:#e6f0ff; color:var(--accent); font-size:12px; font-weight:600; text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); }
+tbody td { padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text2); }
+tbody tr:hover { background:rgba(90,170,138,0.03); }
+tbody tr:hover td { color:var(--text); }
+.perm-matrix { background:var(--card); border:1px solid var(--border); border-radius:4px; overflow:hidden; margin-top:14px; }
+.perm-matrix table { font-size:12px; }
+.perm-matrix th, .perm-matrix td { text-align:center; padding:8px; }
+.perm-matrix th:first-child, .perm-matrix td:first-child { text-align:left; }
+.perm-matrix td:first-child { color:var(--text); font-weight:600; }
+.perm-matrix th { background:#e6f0ff; color:var(--accent); font-weight:600; border-bottom:1px solid var(--border); }
+.perm-matrix td { border-bottom:1px solid var(--border); color:var(--text2); }
+.perm-check { width:16px; height:16px; cursor:pointer; accent-color:var(--accent); }
+.tag { font-size:11px; padding:2px 8px; border-radius:3px; font-weight:600; display:inline-block; }
+.tag-red { background:rgba(204,68,68,0.12); color:var(--danger); }
+.tag-yellow { background:rgba(204,153,34,0.12); color:var(--warn); }
+.tag-blue { background:rgba(68,136,170,0.12); color:var(--info); }
+.tag-green { background:rgba(68,170,102,0.12); color:var(--success); }
+.action a { font-size:12px; color:var(--text2); text-decoration:none; cursor:pointer; margin-right:8px; }
+.action a:hover { color:var(--accent); text-decoration:underline; }
+.action a.del:hover { color:var(--danger); }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(26,147,111,0.92); border:1px solid rgba(120,210,180,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,77,79,0.4); }
+.pc-toast.info { background:rgba(52,152,219,0.92); border:1px solid rgba(64,169,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(6,30,30,0.96); border:1px solid rgba(120,210,180,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#78d2b4; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#e0f0f0; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#78d2b4,#5aaa8a); color:#020a0a; }
+.pc-btn-secondary { background:rgba(120,210,180,0.08); color:#78d2b4; border:1px solid rgba(120,210,180,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(2,10,10,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(120,210,180,0.15); border-top-color:#78d2b4; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#78d2b4; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+function savePermissions(){var checks=document.querySelectorAll('.perm-check');var data=[];checks.forEach(function(c,i){data.push({index:i,checked:c.checked});});showToast('权限保存成功，共更新 '+data.length+' 项', 'success');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+<header class="header">
+  <div class="header-left"><span>💧 合阳湿地后台管理</span><a href="P02-导航页.html">← 返回导航</a></div>
+  <div class="header-right"><span>2026-05-12 14:32:18</span><span>管理员</span><span onclick="location.href='P01-登录.html'">退出</span></div>
+</header>
+<div class="container">
+  <aside class="sidebar">
+    <div class="sidebar-group"><div class="sidebar-title">设备管理</div>
+      <a class="sidebar-item" href="P11-设备台账.html">📹 设备台账</a>
+      <a class="sidebar-item" href="P19-设备分组.html">📁 设备分组</a>
+      <a class="sidebar-item" href="P20-流量维保.html">📊 流量维保</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-title">工单调度</div>
+      <a class="sidebar-item" href="P13-工单调度.html">📋 工单调度</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-title">用户权限</div>
+      <a class="sidebar-item" href="P12-用户管理.html">👤 用户管理</a>
+      <a class="sidebar-item active" href="P17-角色权限.html">🔐 角色权限</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-title">巡逻管理</div>
+      <a class="sidebar-item" href="P14-排班管理.html">📅 排班管理</a>
+      <a class="sidebar-item" href="P15-考勤统计.html">📍 考勤统计</a>
+    </div>
+    <div class="sidebar-group"><div class="sidebar-title">系统运维</div>
+      <a class="sidebar-item" href="P18-系统参数.html">⚙️ 系统参数</a>
+      <a class="sidebar-item" href="P16-操作日志.html">📝 操作日志</a>
+    </div>
+  </aside>
+  <main class="content">
+    <div class="content-hd"><h2>角色权限</h2><button class="btn btn-primary" onclick="showToast('功能开发中', 'info')">+ 新增角色</button></div>
+    <div class="filter"><input type="text" placeholder="搜索角色名称..."></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>角色名称</th><th>描述</th><th>关联用户数</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td><strong>管理员</strong></td><td>系统全部功能权限，包括用户管理、配置修改</td><td>2</td><td class="action"><a>编辑</a><a class="del">删除</a></td></tr>
+          <tr><td><strong>调度员</strong></td><td>工单派发、巡逻任务调度、设备状态查看</td><td>3</td><td class="action"><a>编辑</a><a class="del">删除</a></td></tr>
+          <tr><td><strong>小队长</strong></td><td>本队巡逻员管理、考勤确认、工单跟进</td><td>4</td><td class="action"><a>编辑</a><a class="del">删除</a></td></tr>
+          <tr><td><strong>巡逻员</strong></td><td>巡逻任务执行、工单上报、视频查看</td><td>18</td><td class="action"><a>编辑</a><a class="del">删除</a></td></tr>
+          <tr><td><strong>维保人员</strong></td><td>设备维护、巡检、维保记录填写</td><td>2</td><td class="action"><a>编辑</a><a class="del">删除</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="content-hd" style="margin-top:20px;"><h2>权限矩阵 (管理员)</h2><button class="btn btn-primary" onclick="savePermissions()">保存修改</button></div>
+    <div class="perm-matrix">
+      <table>
+        <thead><tr><th>功能模块</th><th>查看</th><th>新增</th><th>修改</th><th>删除</th><th>导出</th></tr></thead>
+        <tbody>
+          <tr><td>设备台账</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+          <tr><td>工单调度</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+          <tr><td>用户管理</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+          <tr><td>排班管理</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+          <tr><td>考勤统计</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check" checked></td></tr>
+          <tr><td>操作日志</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+          <tr><td>角色权限</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td></tr>
+          <tr><td>大屏GIS</td><td><input type="checkbox" class="perm-check" checked></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td><td><input type="checkbox" class="perm-check"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+</body>
+</html>

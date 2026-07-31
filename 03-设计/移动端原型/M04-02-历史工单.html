@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>历史工单 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg:#f0f4f3; --surface:#ffffff; --primary:#1a936f; --primary-dark:#147a5c; --primary-light:rgba(26,147,111,0.08);
+  --danger:#e74c3c; --warning:#f39c12; --info:#3498db; --text:#1a1a1a; --text-secondary:#666666; --text-tertiary:#999999;
+  --border:#e8eceb; --shadow:0 2px 12px rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; min-height:100vh; padding-bottom:calc(12px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling:touch; }
+.page-header { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); padding:16px; padding-top:calc(16px + env(safe-area-inset-top)); color:#fff; display:flex; align-items:center; gap:12px; }
+.back-arrow { width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-size:22px; color:#fff; cursor:pointer; margin-left:-8px; }
+.page-header h1 { font-size:18px; font-weight:700; }
+
+.filter-bar { background:var(--surface); padding:10px 16px; display:flex; gap:8px; overflow-x:auto; border-bottom:1px solid var(--border); scrollbar-width:none; }
+.filter-bar::-webkit-scrollbar { display:none; }
+.filter-tab { padding:6px 14px; border-radius:16px; border:1px solid var(--border); background:var(--bg); color:var(--text-secondary); font-size:13px; cursor:pointer; white-space:nowrap; transition:all 0.2s; font-weight:500; }
+.filter-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+.order-list { padding:12px 16px; }
+.order-card { background:var(--surface); border-radius:14px; padding:14px 16px; margin-bottom:10px; box-shadow:var(--shadow); cursor:pointer; }
+.order-card:active { transform:scale(0.98); }
+.order-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.order-id { font-size:13px; font-weight:600; font-family:"SF Mono",monospace; }
+.order-date { font-size:12px; color:var(--text-tertiary); }
+.order-type { font-size:15px; font-weight:700; margin-bottom:4px; }
+.order-meta { font-size:12px; color:var(--text-secondary); margin-bottom:8px; }
+.order-footer { display:flex; justify-content:space-between; align-items:center; }
+.badge { font-size:11px; padding:3px 10px; border-radius:12px; font-weight:600; }
+.badge-done { background:var(--primary-light); color:var(--primary); }
+.badge-level-1 { background:var(--danger-light); color:var(--danger); }
+.badge-level-2 { background:var(--warning-light); color:var(--warning); }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.m-toast-wrap { position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.m-toast { padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; color:#fff; animation:mToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.m-toast.success { background:linear-gradient(135deg,#1a936f,#147a5c); }
+.m-toast.error { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+.m-toast.info { background:linear-gradient(135deg,#3498db,#2980b9); }
+@keyframes mToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes mToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.m-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; display:none; align-items:center; justify-content:center; padding:16px; }
+.m-modal-overlay.active { display:flex; }
+.m-modal { background:#fff; border-radius:14px; padding:20px; width:100%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.15); }
+.m-modal-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
+.m-modal-body { font-size:14px; color:#666; line-height:1.6; margin-bottom:20px; }
+.m-modal-actions { display:flex; gap:10px; }
+.m-btn { flex:1; padding:13px 0; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; text-align:center; }
+.m-btn-primary { background:linear-gradient(135deg,#1a936f,#147a5c); color:#fff; }
+.m-btn-secondary { background:#f0f4f3; color:#666; }
+.m-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998; display:none; align-items:flex-end; justify-content:center; }
+.m-sheet-overlay.active { display:flex; }
+.m-sheet { background:#fff; border-radius:16px 16px 0 0; padding:16px; width:100%; max-width:500px; transform:translateY(100%); transition:transform .3s ease; }
+.m-sheet-overlay.active .m-sheet { transform:translateY(0); }
+.m-sheet-title { font-size:16px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e8eceb; }
+.m-sheet-item { padding:14px; text-align:center; font-size:15px; color:#1a1a1a; cursor:pointer; border-bottom:1px solid #f0f4f3; }
+.m-sheet-item:last-child { border-bottom:none; color:#e74c3c; font-weight:600; }
+.m-loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.m-loading-overlay.active { display:flex; }
+.m-loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:mSpin 0.8s linear infinite; }
+.m-loading-text { color:#fff; font-size:15px; font-weight:600; }
+@keyframes mSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="mToastWrap" class="m-toast-wrap"></div>
+<div id="mModalOverlay" class="m-modal-overlay" onclick="if(event.target===this)closeMModal()"><div class="m-modal"><div id="mModalTitle" class="m-modal-title">提示</div><div id="mModalBody" class="m-modal-body">内容</div><div class="m-modal-actions"><button class="m-btn m-btn-secondary" onclick="closeMModal()">取消</button><button id="mModalConfirm" class="m-btn m-btn-primary">确认</button></div></div></div>
+<div id="mSheetOverlay" class="m-sheet-overlay" onclick="if(event.target===this)closeMSheet()"><div class="m-sheet"><div id="mSheetTitle" class="m-sheet-title">选择操作</div><div id="mSheetBody"></div></div></div>
+<div id="mLoadingOverlay" class="m-loading-overlay"><div class="m-loading-spinner"></div><div id="mLoadingText" class="m-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('mToastWrap');var t=document.createElement('div');t.className='m-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='mToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('mModalTitle').textContent=title||'提示';document.getElementById('mModalBody').textContent=body||'';var btn=document.getElementById('mModalConfirm');btn.onclick=function(){closeMModal();if(onConfirm)onConfirm();};document.getElementById('mModalOverlay').classList.add('active');}
+function closeMModal(){document.getElementById('mModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showActionSheet(title,items){document.getElementById('mSheetTitle').textContent=title||'选择操作';var b=document.getElementById('mSheetBody');b.innerHTML='';items.forEach(function(it){var d=document.createElement('div');d.className='m-sheet-item';d.textContent=it.text;d.onclick=function(){closeMSheet();if(it.action)it.action();};b.appendChild(d);});document.getElementById('mSheetOverlay').classList.add('active');}
+function closeMSheet(){document.getElementById('mSheetOverlay').classList.remove('active');}
+function showLoading(msg){document.getElementById('mLoadingText').textContent=msg||'加载中...';document.getElementById('mLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('mLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+<style>.m-back-btn{position:fixed;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:1000;padding:8px 14px;background:rgba(26,147,111,0.9);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;align-items:center;gap:4px;}.m-back-btn::before{content:'←';font-size:15px;}</style><a href="M04-我的.html" class="m-back-btn">返回我的</a>
+<header class="page-header">
+  <span class="back-arrow" onclick="history.back()">&#x2039;</span>
+  <h1>历史工单</h1>
+</header>
+
+<div class="filter-bar">
+  <div class="filter-tab active">本月</div>
+  <div class="filter-tab">上月</div>
+  <div class="filter-tab">全部</div>
+</div>
+
+<div class="order-list">
+  <div class="order-card">
+    <div class="order-header">
+      <span class="order-id">WO-20260511-007</span>
+      <span class="order-date">05-11</span>
+    </div>
+    <div class="order-type">南区栈道 · 护栏损坏</div>
+    <div class="order-meta">处置时长 45分钟 · 拍照 3张 · 反馈：已修复</div>
+    <div class="order-footer">
+      <span class="badge badge-level-2">二级</span>
+      <span class="badge badge-done">已完成</span>
+    </div>
+  </div>
+
+  <div class="order-card">
+    <div class="order-header">
+      <span class="order-id">WO-20260510-004</span>
+      <span class="order-date">05-10</span>
+    </div>
+    <div class="order-type">核心区观景台 · 游客聚集</div>
+    <div class="order-meta">处置时长 20分钟 · 拍照 2张 · 反馈：已疏散</div>
+    <div class="order-footer">
+      <span class="badge badge-level-3" style="background:rgba(52,152,219,0.1);color:var(--info);">三级</span>
+      <span class="badge badge-done">已完成</span>
+    </div>
+  </div>
+
+  <div class="order-card">
+    <div class="order-header">
+      <span class="order-id">WO-20260509-003</span>
+      <span class="order-date">05-09</span>
+    </div>
+    <div class="order-type">气象监测站 · 风速超限</div>
+    <div class="order-meta">处置时长 15分钟 · 拍照 1张 · 反馈：确认正常</div>
+    <div class="order-footer">
+      <span class="badge badge-level-3" style="background:rgba(52,152,219,0.1);color:var(--info);">三级</span>
+      <span class="badge badge-done">已完成</span>
+    </div>
+  </div>
+
+  <div class="order-card">
+    <div class="order-header">
+      <span class="order-id">WO-20260508-002</span>
+      <span class="order-date">05-08</span>
+    </div>
+    <div class="order-type">北门保护区 · 非法闯入</div>
+    <div class="order-meta">处置时长 30分钟 · 拍照 4张 · 反馈：已驱离</div>
+    <div class="order-footer">
+      <span class="badge badge-level-1">一级</span>
+      <span class="badge badge-done">已完成</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

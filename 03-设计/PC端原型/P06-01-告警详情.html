@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>告警详情 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root { --bg-deep:#0A1628; --bg-card:rgba(15,30,55,0.85); --bg-card2:rgba(10,28,60,0.6); --header-bg:rgba(10,25,50,0.95); --accent:#00BFFF; --accent-dim:rgba(0,191,255,0.12); --accent-glow:rgba(0,191,255,0.25); --cyan:#00E5CC; --danger:#FF3366; --danger-glow:rgba(255,51,102,0.3); --warn:#FFCC00; --green:#00CC99; --text:#FFFFFF; --text2:#CCCCCC; --text3:#8899AA; --border:rgba(0,191,255,0.15); --border-bright:rgba(0,191,255,0.3); --font-num:"DIN Pro","SF Mono",monospace; --text-dim:var(--text3); --warning:var(--warn); --info:#40a9ff; --info-glow:rgba(64,169,255,0.4); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg-deep); color:var(--text); font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif; overflow:hidden; width:100vw; height:100vh; }
+.header { position:fixed; top:0; left:0; right:0; height:64px; background:var(--header-bg); backdrop-filter:blur(12px); border-bottom:1px solid var(--border-bright); display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:1000; }
+.header-left { display:flex; align-items:center; gap:16px; }
+.back-btn { width:36px; height:36px; border:1px solid var(--border); background:rgba(0,191,255,0.08); border-radius:6px; color:var(--accent); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.back-btn:hover { border-color:var(--accent); }
+.header-title { font-size:18px; font-weight:600; color:var(--accent); }
+.main { padding:88px 24px 24px; display:grid; grid-template-columns:1fr 360px; gap:20px; height:100vh; }
+.card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:20px; }
+.card-title { font-size:16px; font-weight:600; color:var(--accent); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.info-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.info-row:last-child { border-bottom:none; }
+.info-label { color:var(--text-dim); }
+.info-value { color:var(--text); font-weight:500; }
+.badge { padding:3px 12px; border-radius:4px; font-size:12px; font-weight:600; }
+.badge-danger { background:rgba(255,51,102,0.12); color:var(--danger); border:1px solid rgba(255,51,102,0.25); }
+.badge-warn { background:rgba(255,204,0,0.1); color:var(--warn); border:1px solid rgba(255,204,0,0.2); }
+.timeline { position:relative; padding-left:24px; }
+.timeline::before { content:''; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:var(--border); }
+.tl-item { position:relative; margin-bottom:18px; }
+.tl-item::before { content:''; position:absolute; left:-22px; top:4px; width:10px; height:10px; border-radius:50%; background:var(--accent); border:2px solid var(--bg-deep); }
+.tl-time { font-size:12px; color:var(--text-dim); margin-bottom:4px; }
+.tl-text { font-size:13px; color:var(--text); }
+.action-bar { display:flex; gap:12px; margin-top:16px; }
+.btn { padding:10px 24px; border-radius:6px; border:none; font-size:14px; font-weight:600; cursor:pointer; }
+.btn-primary { background:linear-gradient(135deg,var(--accent),#0099cc); color:#0A1628; }
+.btn-secondary { background:rgba(0,191,255,0.08); color:var(--accent); border:1px solid var(--border); }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(26,147,111,0.92); border:1px solid rgba(0,191,255,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,51,102,0.4); }
+.pc-toast.info { background:rgba(52,152,219,0.92); border:1px solid rgba(64,169,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(15,30,55,0.96); border:1px solid rgba(0,191,255,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#00BFFF; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#FFFFFF; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#00BFFF,#0099cc); color:#0A1628; }
+.pc-btn-secondary { background:rgba(0,191,255,0.08); color:#00BFFF; border:1px solid rgba(0,191,255,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(0,191,255,0.15); border-top-color:#00BFFF; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#00BFFF; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+<header class="header">
+  <div class="header-left">
+    <button class="back-btn" onclick="history.back()">&#x2039;</button>
+    <span class="header-title">告警详情</span>
+  </div>
+  <div style="font-size:13px;color:var(--text-dim);">工单号 AL-20260512-001</div>
+</header>
+<div class="main">
+  <div class="left-col">
+    <div class="card">
+      <div class="card-title">&#x1F6A8; 告警信息</div>
+      <div class="info-row"><span class="info-label">告警类型</span><span class="info-value"><span class="badge badge-danger">非法闯入</span></span></div>
+      <div class="info-row"><span class="info-label">告警等级</span><span class="info-value"><span class="badge badge-danger">一级</span></span></div>
+      <div class="info-row"><span class="info-label">告警位置</span><span class="info-value">北门保护区入口</span></div>
+      <div class="info-row"><span class="info-label">经纬度</span><span class="info-value">34.9876°N, 110.2345°E</span></div>
+      <div class="info-row"><span class="info-label">触发时间</span><span class="info-value">2026-05-12 10:42:18</span></div>
+      <div class="info-row"><span class="info-label">持续时长</span><span class="info-value">12分钟 35秒</span></div>
+      <div class="info-row"><span class="info-label">处理状态</span><span class="info-value" style="color:var(--danger);font-weight:700;">● 未处理</span></div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">✏️ 处置记录</div>
+      <div class="timeline">
+        <div class="tl-item"><div class="tl-time">10:42:18</div><div class="tl-text">视频分析系统检测到异常运动</div></div>
+        <div class="tl-item"><div class="tl-time">10:42:20</div><div class="tl-text">自动生成告警工单 AL-20260512-001</div></div>
+        <div class="tl-item"><div class="tl-time">10:42:25</div><div class="tl-text">推送至巡查员 张三 手机端</div></div>
+        <div class="tl-item"><div class="tl-time">10:43:00</div><div class="tl-text">等待巡查员确认处置...</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="right-col">
+    <div class="card">
+      <div class="card-title">&#x1F4F7; 截图证据</div>
+      <div style="aspect-ratio:16/9;background:var(--bg-card2);border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:13px;">
+        [CAM-01 截图预览]
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">&#x1F464; 责任人</div>
+      <div class="info-row"><span class="info-label">巡查员</span><span class="info-value">张三 138****5678</span></div>
+      <div class="info-row"><span class="info-label">距离事发点</span><span class="info-value">240m</span></div>
+      <div class="action-bar">
+        <button class="btn btn-primary" onclick="showToast('已派发处置任务', 'success')">派发处置</button>
+        <button class="btn btn-secondary" onclick="showToast('已标记误报', 'success')">误报</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

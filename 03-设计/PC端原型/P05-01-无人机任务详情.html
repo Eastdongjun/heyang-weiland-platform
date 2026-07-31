@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>无人机任务详情 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root { --bg:#0A1628; --bg-deep:#0A1628; --panel:rgba(15,30,55,0.85); --bg-card:rgba(15,30,55,0.85); --bg-card2:rgba(10,28,60,0.6); --header:rgba(1,30,50,0.95); --accent:#00BFFF; --accent-dim:rgba(0,191,255,0.12); --accent-glow:rgba(0,191,255,0.25); --cyan:#00E5CC; --danger:#FF3366; --danger-glow:rgba(255,51,102,0.3); --warn:#FFCC00; --green:#00CC99; --text:#FFFFFF; --text2:#CCCCCC; --text3:#8899AA; --info:#40a9ff; --text-dim:#8899AA; --border:rgba(0,191,255,0.15); --border-bright:rgba(0,191,255,0.3); --font-num:"DIN Pro","SF Mono",monospace; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; overflow:hidden; width:100vw; height:100vh; }
+.header { position:fixed; top:0; left:0; right:0; height:64px; background:var(--header); backdrop-filter:blur(12px); border-bottom:1px solid var(--border-bright); display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:1000; }
+.back-btn { width:36px; height:36px; border:1px solid var(--border); background:rgba(0,191,255,0.08); border-radius:6px; color:var(--accent); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.main { padding:88px 24px 24px; display:grid; grid-template-columns:1fr 1fr; gap:20px; height:100vh; }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:20px; }
+.card-title { font-size:16px; font-weight:600; color:var(--accent); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.info-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px; }
+.info-label { color:var(--text-dim); }
+.info-value { color:var(--text); font-weight:500; }
+.status-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; background:var(--accent); }
+.video-box { aspect-ratio:16/10; background:#0a1a1a; border-radius:6px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-dim); font-size:14px; }
+.btn { padding:10px 24px; border-radius:6px; border:none; font-size:14px; font-weight:600; cursor:pointer; }
+.btn-primary { background:linear-gradient(135deg,var(--accent),#0088CC); color:#0A1628; }
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(26,147,111,0.92); border:1px solid rgba(0,191,255,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,77,79,0.4); }
+.pc-toast.info { background:rgba(52,152,219,0.92); border:1px solid rgba(64,169,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(6,30,30,0.96); border:1px solid rgba(0,191,255,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#00BFFF; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#e0f0f0; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#00BFFF,#0088CC); color:#0A1628; }
+.pc-btn-secondary { background:rgba(0,191,255,0.08); color:#00BFFF; border:1px solid rgba(0,191,255,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(0,191,255,0.15); border-top-color:#00BFFF; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#00BFFF; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+<header class="header">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <a href="P05-无人机管理.html" class="back-link">&#x2039; 返回</a>
+    <span style="font-size:18px;font-weight:600;color:var(--accent);">无人机任务详情</span>
+  </div>
+  <span style="font-size:13px;color:var(--text-dim);">任务编号 UAV-20260512-002</span>
+</header>
+<div class="main">
+  <div class="left">
+    <div class="card">
+      <div class="card-title">&#x1F4E1; 实时图传</div>
+      <div class="video-box">[DJI M30T 实时图像流]</div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">&#x1F4F7; 航拍截图</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <div style="aspect-ratio:4/3;background:#0a1a1a;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12px;">截图1</div>
+        <div style="aspect-ratio:4/3;background:#0a1a1a;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12px;">截图2</div>
+        <div style="aspect-ratio:4/3;background:#0a1a1a;border-radius:4px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:12px;">截图3</div>
+      </div>
+    </div>
+  </div>
+  <div class="right">
+    <div class="card">
+      <div class="card-title">&#x1F4CB; 任务信息</div>
+      <div class="info-row"><span class="info-label">无人机型号</span><span class="info-value">DJI M30T</span></div>
+      <div class="info-row"><span class="info-label">飞行高度</span><span class="info-value">120m</span></div>
+      <div class="info-row"><span class="info-label">飞行速度</span><span class="info-value">15m/s</span></div>
+      <div class="info-row"><span class="info-label">剩余电量</span><span class="info-value">68%</span></div>
+      <div class="info-row"><span class="info-label">任务区域</span><span class="info-value">核心保护区</span></div>
+      <div class="info-row"><span class="info-label">执行状态</span><span class="info-value"><span class="status-dot"></span>执行中</span></div>
+    </div>
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">&#x1F6E1; 操作</div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:10px;" onclick="showToast('已发送返航指令', 'success')">一键返航</button>
+      <button class="btn btn-primary" style="width:100%;background:var(--info);" onclick="showToast('已发送拍照指令', 'success')">实时拍照</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 角色权限控制: 仅管理员可操作无人机
+(function(){
+  var role = localStorage.getItem('userRole') || 'user';
+  if (role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(function(el){
+      el.style.display = 'none';
+    });
+    // 显示无权限提示
+    var tip = document.createElement('div');
+    tip.style.cssText = 'position:fixed;top:80px;right:24px;z-index:9999;padding:10px 20px;background:rgba(255,77,79,0.12);border:1px solid rgba(255,77,79,0.3);color:#ff4d4f;border-radius:8px;font-size:13px;';
+    tip.textContent = '观看模式: 仅管理员可执行飞行操作';
+    document.body.appendChild(tip);
+    setTimeout(function(){ tip.style.opacity='0'; tip.style.transition='opacity 1s'; setTimeout(function(){tip.remove()},1000); }, 4000);
+  }
+})();
+</script>
+</body>
+</html>

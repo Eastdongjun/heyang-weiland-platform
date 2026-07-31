@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>合阳洽川湿地智慧管理平台 — 系统架构图 V2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'JetBrains Mono', monospace; background: #020617; min-height: 100vh; padding: 2rem; color: #fff; }
+    .container { max-width: 1440px; margin: 0 auto; }
+    .header { margin-bottom: 1.5rem; }
+    .header-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.25rem; }
+    .pulse-dot { width: 12px; height: 12px; background: #22d3ee; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    .header-badge { display: inline-block; background: rgba(34,211,238,0.15); color: #22d3ee; font-size: 0.65rem; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(34,211,238,0.3); margin-left: 0.75rem; vertical-align: middle; }
+    .subtitle { color: #94a3b8; font-size: 0.825rem; margin-left: 1.75rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .subtitle .tag { display: inline-block; font-size: 0.6rem; padding: 2px 8px; border-radius: 3px; background: rgba(52,211,153,0.15); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .diagram-container { background: rgba(15,23,42,0.5); border-radius: 1rem; border: 1px solid #1e293b; padding: 1.5rem; overflow-x: auto; }
+    svg { width: 100%; min-width: 1100px; display: block; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(320px,1fr)); gap: 1rem; margin-top: 1.5rem; }
+    .card { background: rgba(15,23,42,0.5); border-radius: 0.75rem; border: 1px solid #1e293b; padding: 1.25rem; transition: border-color 0.2s; }
+    .card:hover { border-color: #334155; }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .card-dot.cyan { background: #22d3ee; box-shadow: 0 0 8px rgba(34,211,238,0.3); }
+    .card-dot.emerald { background: #34d399; box-shadow: 0 0 8px rgba(52,211,153,0.3); }
+    .card-dot.violet { background: #a78bfa; box-shadow: 0 0 8px rgba(167,139,250,0.3); }
+    .card-dot.amber { background: #fbbf24; box-shadow: 0 0 8px rgba(251,191,36,0.3); }
+    .card-dot.rose { background: #fb7185; box-shadow: 0 0 8px rgba(251,113,133,0.3); }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; line-height: 1.7; }
+    .card li { margin-bottom: 0.2rem; }
+    .footer { text-align: center; margin-top: 1.5rem; color: #475569; font-size: 0.7rem; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .footer span { color: #334155; }
+    .stat-row { display: flex; gap: 1.5rem; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 1.25rem; font-weight: 700; color: #22d3ee; }
+    .stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-row">
+      <div class="pulse-dot"></div>
+      <h1>合阳洽川湿地智慧管理平台 — 系统架构图 <span class="header-badge">V2.0</span></h1>
+    </div>
+    <div class="subtitle">
+      <span>Heyang Qiachuan Wetland Smart Management Platform</span>
+      <span class="tag">OPTIMIZED · 152 Features</span>
+      <span class="tag">3 Endpoints</span>
+      <span class="tag">9 Microservices</span>
+      <span class="tag">No VR Module</span>
+    </div>
+  </div>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 1200 980">
+      <defs>
+        <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0,10 3.5,0 7" fill="#64748b"/>
+        </marker>
+        <marker id="arr-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0,10 3.5,0 7" fill="#22d3ee"/>
+        </marker>
+        <marker id="arr-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0,10 3.5,0 7" fill="#fb7185"/>
+        </marker>
+        <marker id="arr-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0,10 3.5,0 7" fill="#34d399"/>
+        </marker>
+        <marker id="arr-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0,10 3.5,0 7" fill="#a78bfa"/>
+        </marker>
+        <marker id="arr-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0,10 3.5,0 7" fill="#fbbf24"/>
+        </marker>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0L0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <!-- Glow filters -->
+        <filter id="glow-cyan"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glow-rose"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="glow-emerald"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="shadow-sm"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#000" flood-opacity="0.4"/></filter>
+      </defs>
+
+      <!-- Background -->
+      <rect width="100%" height="100%" fill="url(#grid)"/>
+
+      <!-- ======================================================================= -->
+      <!-- LAYER 1: 用户接入层 (Presentation Layer)                                  -->
+      <!-- ======================================================================= -->
+      <rect x="20" y="15" width="1160" height="120" rx="10" fill="rgba(8,51,68,0.08)" stroke="#22d3ee" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="35" y="35" fill="#22d3ee" font-size="10" font-weight="600">LAYER 1: 用户接入层 (Presentation Layer)</text>
+
+      <!-- 指挥中心 PC端 -->
+      <rect x="60" y="50" width="260" height="70" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="190" y="75" fill="#fff" font-size="12" font-weight="600" text-anchor="middle">🖥️ 指挥中心 PC 端</text>
+      <text x="190" y="92" fill="#94a3b8" font-size="9" text-anchor="middle">Vue3 + Element Plus</text>
+      <text x="190" y="107" fill="#22d3ee" font-size="8" text-anchor="middle">WebRTC · ECharts · GIS Map</text>
+
+      <!-- 86寸大屏 -->
+      <rect x="420" y="50" width="260" height="70" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="550" y="75" fill="#fff" font-size="12" font-weight="600" text-anchor="middle">📊 86寸大屏端</text>
+      <text x="550" y="92" fill="#94a3b8" font-size="9" text-anchor="middle">React + DataV</text>
+      <text x="550" y="107" fill="#22d3ee" font-size="8" text-anchor="middle">GIS Map · 实时仪表盘 · 告警弹窗</text>
+
+      <!-- 巡逻移动端 -->
+      <rect x="780" y="50" width="260" height="70" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="910" y="75" fill="#fff" font-size="12" font-weight="600" text-anchor="middle">📱 巡逻移动端</text>
+      <text x="910" y="92" fill="#94a3b8" font-size="9" text-anchor="middle">Flutter + GetX</text>
+      <text x="910" y="107" fill="#22d3ee" font-size="8" text-anchor="middle">离线地图 · IM · SOS · 拍照取证</text>
+
+      <!-- Arrows from layer 1 to layer 2 -->
+      <line x1="190" y1="120" x2="190" y2="155" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+      <line x1="550" y1="120" x2="550" y2="155" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+      <line x1="910" y1="120" x2="910" y2="155" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+
+      <!-- HTTPS label on arrows -->
+      <text x="200" y="142" fill="#64748b" font-size="7">HTTPS</text>
+      <text x="560" y="142" fill="#64748b" font-size="7">HTTPS</text>
+      <text x="920" y="142" fill="#64748b" font-size="7">HTTPS</text>
+
+      <!-- ======================================================================= -->
+      <!-- LAYER 2: API网关 & 安全层 (Gateway & Security Layer)                     -->
+      <!-- ======================================================================= -->
+      <rect x="20" y="160" width="1160" height="85" rx="10" fill="rgba(136,19,55,0.08)" stroke="#fb7185" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="35" y="180" fill="#fb7185" font-size="10" font-weight="600">LAYER 2: API 网关 &amp; 安全层 (Gateway &amp; Security Layer)</text>
+
+      <!-- Kong/APISIX -->
+      <rect x="50" y="188" width="250" height="48" rx="6" fill="rgba(136,19,55,0.35)" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="175" y="210" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">Kong / APISIX API Gateway</text>
+      <text x="175" y="226" fill="#fb7185" font-size="8" text-anchor="middle">限流 · 鉴权 · 路由 · 熔断 · WAF · 灰度</text>
+
+      <!-- Nginx + Keepalived -->
+      <rect x="340" y="188" width="220" height="48" rx="6" fill="rgba(136,19,55,0.35)" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="450" y="210" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">Nginx + Keepalived</text>
+      <text x="450" y="226" fill="#fb7185" font-size="8" text-anchor="middle">SSL Termination · 负载均衡 · 健康检查</text>
+
+      <!-- 统一认证中心 -->
+      <rect x="600" y="188" width="250" height="48" rx="6" fill="rgba(136,19,55,0.35)" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="725" y="210" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">统一认证中心</text>
+      <text x="725" y="226" fill="#fb7185" font-size="8" text-anchor="middle">JWT · OAuth2 · RBAC · bcrypt · SSO</text>
+
+      <!-- HTTPS/RTSPS加密 -->
+      <rect x="890" y="188" width="260" height="48" rx="6" fill="rgba(136,19,55,0.35)" stroke="#fb7185" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <text x="1020" y="210" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">HTTPS / RTSPS 加密通道</text>
+      <text x="1020" y="226" fill="#fb7185" font-size="8" text-anchor="middle">TLS 1.3 · 视频流加密 · 防篡改</text>
+
+      <!-- Arrow from gateway to microservices -->
+      <line x1="600" y1="236" x2="600" y2="270" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arr-rose)"/>
+      <text x="610" y="258" fill="#64748b" font-size="7">负载均衡转发</text>
+
+      <!-- ======================================================================= -->
+      <!-- LAYER 3: 微服务业务层 (Microservice Layer · 9 Services)                  -->
+      <!-- ======================================================================= -->
+      <rect x="20" y="275" width="1160" height="300" rx="10" fill="rgba(6,78,59,0.08)" stroke="#34d399" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="35" y="295" fill="#34d399" font-size="10" font-weight="600">LAYER 3: 微服务业务层 (Microservice Layer · 9 Services · Optimized)</text>
+
+      <!-- Row 1: 5 services -->
+      <!-- 视频服务 -->
+      <rect x="35" y="308" width="212" height="115" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="35" y="308" width="212" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="141" y="323" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">📹 视频服务</text>
+      <text x="141" y="340" fill="#94a3b8" font-size="8" text-anchor="middle">Java/Go · SRS/WVP 流媒体</text>
+      <text x="141" y="355" fill="#94a3b8" font-size="7.5" text-anchor="middle">• GB/T 28181 / RTSP 接入</text>
+      <text x="141" y="368" fill="#94a3b8" font-size="7.5" text-anchor="middle">• PTZ 控制 · 预置位巡航</text>
+      <text x="141" y="381" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 录像回放 · 远程下载</text>
+      <text x="141" y="394" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 实时视频墙 (1/4/9/16)</text>
+      <text x="141" y="412" fill="#34d399" font-size="7" text-anchor="middle">延迟 ≤3s · 25fps · H.265</text>
+
+      <!-- AI服务 -->
+      <rect x="262" y="308" width="212" height="115" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="262" y="308" width="212" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="368" y="323" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">🧠 AI 服务</text>
+      <text x="368" y="340" fill="#94a3b8" font-size="8" text-anchor="middle">Python · Triton Inference Server</text>
+      <text x="368" y="355" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 热成像火点检测</text>
+      <text x="368" y="368" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 可见光烟雾识别 (&gt;70%)</text>
+      <text x="368" y="381" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 移动侦测 · 越界告警</text>
+      <text x="368" y="394" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 视频质量诊断</text>
+      <text x="368" y="412" fill="#34d399" font-size="7" text-anchor="middle">PyTorch → TensorRT / ONNX</text>
+
+      <!-- 无人机服务 -->
+      <rect x="489" y="308" width="212" height="115" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="489" y="308" width="212" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="595" y="323" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">🚁 无人机服务</text>
+      <text x="595" y="340" fill="#94a3b8" font-size="8" text-anchor="middle">Java · DJI Cloud API</text>
+      <text x="595" y="355" fill="#94a3b8" font-size="7.5" text-anchor="middle">• DJI Dock 机场管控</text>
+      <text x="595" y="368" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 航线库 (KML 导入/编辑)</text>
+      <text x="595" y="381" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 定时任务 · 手动任务</text>
+      <text x="595" y="394" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 一键返航 · 环境联动</text>
+      <text x="595" y="412" fill="#34d399" font-size="7" text-anchor="middle">直播延迟 ≤2s</text>
+
+      <!-- GIS服务 -->
+      <rect x="716" y="308" width="212" height="115" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="716" y="308" width="212" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="822" y="323" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">🗺️ GIS 服务</text>
+      <text x="822" y="340" fill="#94a3b8" font-size="8" text-anchor="middle">Java · GeoServer · PostGIS</text>
+      <text x="822" y="355" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 天地图 API 接入</text>
+      <text x="822" y="368" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 设备 POI 标注</text>
+      <text x="822" y="381" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 电子围栏 · 测距</text>
+      <text x="822" y="394" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 轨迹回放 · 热力图</text>
+      <text x="822" y="412" fill="#34d399" font-size="7" text-anchor="middle">GeoJSON · CGCS2000</text>
+
+      <!-- IoT服务 -->
+      <rect x="943" y="308" width="222" height="115" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="943" y="308" width="222" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="1054" y="323" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">🌡️ IoT 服务</text>
+      <text x="1054" y="340" fill="#94a3b8" font-size="8" text-anchor="middle">Java/Go · EMQX</text>
+      <text x="1054" y="355" fill="#94a3b8" font-size="7.5" text-anchor="middle">• MQTT · Modbus 协议</text>
+      <text x="1054" y="368" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 温湿度 · 风速 · 雨量</text>
+      <text x="1054" y="381" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 多阈值告警</text>
+      <text x="1054" y="394" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 数据归档 · 趋势分析</text>
+      <text x="1054" y="412" fill="#34d399" font-size="7" text-anchor="middle">采集频率 1s~60s 可配</text>
+
+      <!-- Row 2: 4 services -->
+      <!-- 告警引擎 -->
+      <rect x="35" y="438" width="267" height="120" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="35" y="438" width="267" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="168" y="453" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">🚨 告警引擎</text>
+      <text x="168" y="470" fill="#94a3b8" font-size="8" text-anchor="middle">Java · Drools 规则引擎 · CEP</text>
+      <text x="168" y="485" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 预设规则 (AND/OR 可视化)</text>
+      <text x="168" y="498" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 自动合并去重 (10s 窗口)</text>
+      <text x="168" y="511" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 4 级自动等级 (紧急/高/中/低)</text>
+      <text x="168" y="524" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 截图 + 30s 视频片段关联</text>
+      <text x="168" y="537" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 多通道联动 (声光/短信/IM)</text>
+      <text x="168" y="553" fill="#34d399" font-size="7" text-anchor="middle">端到端延迟 ≤5s</text>
+
+      <!-- 工单服务 -->
+      <rect x="317" y="438" width="267" height="120" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="317" y="438" width="267" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="450" y="453" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">📋 工单服务</text>
+      <text x="450" y="470" fill="#94a3b8" font-size="8" text-anchor="middle">Java · Camunda BPMN 工作流</text>
+      <text x="450" y="485" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 告警自动创建工单</text>
+      <text x="450" y="498" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 智能就近派发</text>
+      <text x="450" y="511" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 派发 · 改派 · 催办 · 转交</text>
+      <text x="450" y="524" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 审核归档 · 知识库</text>
+      <text x="450" y="537" fill="#94a3b8" font-size="7.5" text-anchor="middle">• SLA 超时升级</text>
+      <text x="450" y="553" fill="#34d399" font-size="7" text-anchor="middle">自动创建 &lt;3s</text>
+
+      <!-- IM通讯 (Simplified) -->
+      <rect x="599" y="438" width="267" height="120" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="599" y="438" width="267" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="732" y="453" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">💬 IM 通讯 (简约版)</text>
+      <text x="732" y="470" fill="#94a3b8" font-size="8" text-anchor="middle">Go · WebSocket · Tigris</text>
+      <text x="732" y="485" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 系统通知推送</text>
+      <text x="732" y="498" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 文字消息 · @提醒</text>
+      <text x="732" y="511" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 告警语音播报</text>
+      <text x="732" y="524" fill="#94a3b8" font-size="7.5" text-anchor="middle">• SOS 一键求救</text>
+      <text x="732" y="537" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 已读回执</text>
+      <text x="732" y="553" fill="#34d399" font-size="7" text-anchor="middle">无群聊/会商 · 专注告警通知</text>
+
+      <!-- 公共服务 -->
+      <rect x="881" y="438" width="284" height="120" rx="6" fill="rgba(6,78,59,0.35)" stroke="#34d399" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="881" y="438" width="284" height="22" rx="6" fill="rgba(52,211,153,0.12)"/>
+      <text x="1023" y="453" fill="#34d399" font-size="10" font-weight="600" text-anchor="middle">⚙️ 公共服务</text>
+      <text x="1023" y="470" fill="#94a3b8" font-size="8" text-anchor="middle">Java/Go · Spring Cloud</text>
+      <text x="1023" y="485" fill="#94a3b8" font-size="7.5" text-anchor="middle">• RBAC 用户权限管理</text>
+      <text x="1023" y="498" fill="#94a3b8" font-size="7.5" text-anchor="middle">• Nacos 配置中心 / 注册发现</text>
+      <text x="1023" y="511" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 操作审计日志</text>
+      <text x="1023" y="524" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 设备校时 NTP</text>
+      <text x="1023" y="537" fill="#94a3b8" font-size="7.5" text-anchor="middle">• 分布式链路追踪 SkyWalking</text>
+      <text x="1023" y="553" fill="#34d399" font-size="7" text-anchor="middle">Sentinel 熔断降级</text>
+
+      <!-- Arrows from microservices to data layer -->
+      <line x1="168" y1="558" x2="168" y2="600" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+      <line x1="450" y1="558" x2="450" y2="600" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+      <line x1="732" y1="558" x2="732" y2="600" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+      <line x1="1023" y1="558" x2="1023" y2="600" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-emerald)"/>
+
+      <!-- ======================================================================= -->
+      <!-- LAYER 4: 数据层 & 消息中间件 (Data & Message Layer)                      -->
+      <!-- ======================================================================= -->
+      <rect x="20" y="605" width="1160" height="150" rx="10" fill="rgba(76,29,149,0.08)" stroke="#a78bfa" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="35" y="625" fill="#a78bfa" font-size="10" font-weight="600">LAYER 4: 数据层 &amp; 消息中间件 (Data &amp; Message Layer)</text>
+
+      <!-- PostgreSQL -->
+      <rect x="35" y="638" width="160" height="105" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="35" y="638" width="160" height="22" rx="6" fill="rgba(167,139,250,0.12)"/>
+      <text x="115" y="654" fill="#a78bfa" font-size="10" font-weight="600" text-anchor="middle">PostgreSQL</text>
+      <text x="115" y="674" fill="#94a3b8" font-size="8" text-anchor="middle">关系型 · 业务数据</text>
+      <text x="115" y="690" fill="#94a3b8" font-size="7.5" text-anchor="middle">工单 · 用户 · 设备</text>
+      <text x="115" y="706" fill="#94a3b8" font-size="7.5" text-anchor="middle">告警规则 · 配置</text>
+      <text x="115" y="726" fill="#a78bfa" font-size="7" text-anchor="middle">Patroni HA 主从复制</text>
+
+      <!-- TDengine -->
+      <rect x="210" y="638" width="160" height="105" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="210" y="638" width="160" height="22" rx="6" fill="rgba(167,139,250,0.12)"/>
+      <text x="290" y="654" fill="#a78bfa" font-size="10" font-weight="600" text-anchor="middle">TDengine</text>
+      <text x="290" y="674" fill="#94a3b8" font-size="8" text-anchor="middle">时序数据库</text>
+      <text x="290" y="690" fill="#94a3b8" font-size="7.5" text-anchor="middle">传感器 · 遥测数据</text>
+      <text x="290" y="706" fill="#94a3b8" font-size="7.5" text-anchor="middle">设备状态历史</text>
+      <text x="290" y="726" fill="#a78bfa" font-size="7" text-anchor="middle">90 天保留 · 超级表</text>
+
+      <!-- Redis -->
+      <rect x="385" y="638" width="150" height="105" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="385" y="638" width="150" height="22" rx="6" fill="rgba(167,139,250,0.12)"/>
+      <text x="460" y="654" fill="#a78bfa" font-size="10" font-weight="600" text-anchor="middle">Redis</text>
+      <text x="460" y="674" fill="#94a3b8" font-size="8" text-anchor="middle">缓存 · Session</text>
+      <text x="460" y="690" fill="#94a3b8" font-size="7.5" text-anchor="middle">在线状态 · 计数</text>
+      <text x="460" y="706" fill="#94a3b8" font-size="7.5" text-anchor="middle">分布式锁</text>
+      <text x="460" y="726" fill="#a78bfa" font-size="7" text-anchor="middle">Sentinel 高可用集群</text>
+
+      <!-- Elasticsearch -->
+      <rect x="550" y="638" width="170" height="105" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="550" y="638" width="170" height="22" rx="6" fill="rgba(167,139,250,0.12)"/>
+      <text x="635" y="654" fill="#a78bfa" font-size="10" font-weight="600" text-anchor="middle">Elasticsearch</text>
+      <text x="635" y="674" fill="#94a3b8" font-size="8" text-anchor="middle">日志 · 告警索引</text>
+      <text x="635" y="690" fill="#94a3b8" font-size="7.5" text-anchor="middle">全文检索</text>
+      <text x="635" y="706" fill="#94a3b8" font-size="7.5" text-anchor="middle">操作审计</text>
+      <text x="635" y="726" fill="#a78bfa" font-size="7" text-anchor="middle">保留 6 个月</text>
+
+      <!-- MinIO -->
+      <rect x="735" y="638" width="160" height="105" rx="6" fill="rgba(76,29,149,0.35)" stroke="#a78bfa" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="735" y="638" width="160" height="22" rx="6" fill="rgba(167,139,250,0.12)"/>
+      <text x="815" y="654" fill="#a78bfa" font-size="10" font-weight="600" text-anchor="middle">MinIO 对象存储</text>
+      <text x="815" y="674" fill="#94a3b8" font-size="8" text-anchor="middle">录像 · 截图 · 图片</text>
+      <text x="815" y="690" fill="#94a3b8" font-size="7.5" text-anchor="middle">工单附件</text>
+      <text x="815" y="706" fill="#94a3b8" font-size="7.5" text-anchor="middle">告警证据</text>
+      <text x="815" y="726" fill="#a78bfa" font-size="7" text-anchor="middle">纠删码 4+2 · 多版本</text>
+
+      <!-- Message Queue -->
+      <rect x="910" y="638" width="255" height="105" rx="6" fill="rgba(251,146,60,0.25)" stroke="#fb923c" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="910" y="638" width="255" height="22" rx="6" fill="rgba(251,146,60,0.12)"/>
+      <text x="1037" y="654" fill="#fb923c" font-size="10" font-weight="600" text-anchor="middle">📨 消息队列集群</text>
+      <text x="1037" y="674" fill="#94a3b8" font-size="7.5" text-anchor="middle">Kafka — 告警流 · 视频事件</text>
+      <text x="1037" y="690" fill="#94a3b8" font-size="7.5" text-anchor="middle">RabbitMQ — 工单 · 任务调度</text>
+      <text x="1037" y="706" fill="#94a3b8" font-size="7.5" text-anchor="middle">EMQX — IoT 设备 MQTT</text>
+      <text x="1037" y="726" fill="#fb923c" font-size="7" text-anchor="middle">削峰填谷 · 异步解耦</text>
+
+      <!-- Arrow to device layer -->
+      <line x1="600" y1="743" x2="600" y2="780" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-violet)"/>
+      <text x="610" y="766" fill="#64748b" font-size="7">数据流 / 指令下发</text>
+
+      <!-- ======================================================================= -->
+      <!-- LAYER 5: 设备接入层 (Device & Integration Layer)                        -->
+      <!-- ======================================================================= -->
+      <rect x="20" y="785" width="1160" height="130" rx="10" fill="rgba(120,53,15,0.1)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="6,3"/>
+      <text x="35" y="805" fill="#fbbf24" font-size="10" font-weight="600">LAYER 5: 设备接入层 (Device &amp; Integration Layer)</text>
+
+      <!-- 视频设备网关 -->
+      <rect x="35" y="818" width="260" height="84" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="35" y="818" width="260" height="22" rx="6" fill="rgba(251,191,36,0.12)"/>
+      <text x="165" y="834" fill="#fbbf24" font-size="10" font-weight="600" text-anchor="middle">📷 视频设备网关</text>
+      <text x="165" y="854" fill="#94a3b8" font-size="8" text-anchor="middle">GB/T 28181 · RTSP · ONVIF</text>
+      <text x="165" y="870" fill="#94a3b8" font-size="8" text-anchor="middle">海康/大华/宇视 SDK</text>
+      <text x="165" y="886" fill="#94a3b8" font-size="8" text-anchor="middle">激光云台 (热成像+可见光)</text>
+      <text x="165" y="898" fill="#fbbf24" font-size="7" text-anchor="middle">视频流转发 · 协议适配</text>
+
+      <!-- 无人机网关 -->
+      <rect x="315" y="818" width="260" height="84" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="315" y="818" width="260" height="22" rx="6" fill="rgba(251,191,36,0.12)"/>
+      <text x="445" y="834" fill="#fbbf24" font-size="10" font-weight="600" text-anchor="middle">🚁 无人机网关</text>
+      <text x="445" y="854" fill="#94a3b8" font-size="8" text-anchor="middle">DJI Cloud API · 机场 SDK</text>
+      <text x="445" y="870" fill="#94a3b8" font-size="8" text-anchor="middle">航线 KML 解析</text>
+      <text x="445" y="886" fill="#94a3b8" font-size="8" text-anchor="middle">直播推流 RTMP → SRS</text>
+      <text x="445" y="898" fill="#fbbf24" font-size="7" text-anchor="middle">遥控指令 · 状态回传</text>
+
+      <!-- IoT设备网关 -->
+      <rect x="595" y="818" width="250" height="84" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="595" y="818" width="250" height="22" rx="6" fill="rgba(251,191,36,0.12)"/>
+      <text x="720" y="834" fill="#fbbf24" font-size="10" font-weight="600" text-anchor="middle">🌡️ IoT 设备网关</text>
+      <text x="720" y="854" fill="#94a3b8" font-size="8" text-anchor="middle">MQTT Broker · Modbus RTU/TCP</text>
+      <text x="720" y="870" fill="#94a3b8" font-size="8" text-anchor="middle">LoRaWAN · 4G DTU</text>
+      <text x="720" y="886" fill="#94a3b8" font-size="8" text-anchor="middle">风速 · 雨量 · 温湿度 · 烟感</text>
+      <text x="720" y="898" fill="#fbbf24" font-size="7" text-anchor="middle">传感器数据采集 · 指令下发</text>
+
+      <!-- 第三方集成 -->
+      <rect x="860" y="818" width="305" height="84" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <rect x="860" y="818" width="305" height="22" rx="6" fill="rgba(251,191,36,0.12)"/>
+      <text x="1012" y="834" fill="#fbbf24" font-size="10" font-weight="600" text-anchor="middle">🔗 第三方集成</text>
+      <text x="1012" y="854" fill="#94a3b8" font-size="8" text-anchor="middle">气象局 API · 天地图/高德</text>
+      <text x="1012" y="870" fill="#94a3b8" font-size="8" text-anchor="middle">短信网关 (阿里云/腾讯云)</text>
+      <text x="1012" y="886" fill="#94a3b8" font-size="8" text-anchor="middle">林业局 · 应急指挥平台</text>
+      <text x="1012" y="898" fill="#fbbf24" font-size="7" text-anchor="middle">HTTP/Webhook · 标准 REST</text>
+
+      <!-- ===== LEGEND ==== -->
+      <rect x="25" y="925" width="1150" height="45" rx="8" fill="rgba(15,23,42,0.6)" stroke="#1e293b" stroke-width="1"/>
+
+      <text x="40" y="945" fill="#fff" font-size="10" font-weight="600">图例:</text>
+
+      <rect x="95" y="937" width="14" height="10" rx="2" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+      <text x="114" y="946" fill="#94a3b8" font-size="8">前端 (Frontend)</text>
+
+      <rect x="225" y="937" width="14" height="10" rx="2" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1"/>
+      <text x="244" y="946" fill="#94a3b8" font-size="8">网关/安全 (Gateway)</text>
+
+      <rect x="355" y="937" width="14" height="10" rx="2" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+      <text x="374" y="946" fill="#94a3b8" font-size="8">微服务 (Backend)</text>
+
+      <rect x="490" y="937" width="14" height="10" rx="2" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="509" y="946" fill="#94a3b8" font-size="8">数据存储 (Database)</text>
+
+      <rect x="625" y="937" width="14" height="10" rx="2" fill="rgba(251,146,60,0.3)" stroke="#fb923c" stroke-width="1"/>
+      <text x="644" y="946" fill="#94a3b8" font-size="8">消息队列 (MQ)</text>
+
+      <rect x="745" y="937" width="14" height="10" rx="2" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+      <text x="764" y="946" fill="#94a3b8" font-size="8">设备/第三方 (Device/Cloud)</text>
+
+      <!-- Version / meta -->
+      <text x="940" y="946" fill="#475569" font-size="8">|  OPTIMIZED v2.0 · 152 Features · 3 Endpoints · 9 Microservices · 5 Layers</text>
+
+      <text x="940" y="962" fill="#334155" font-size="7">|  No VR Module · Simplified IM · 2026-05-08</text>
+    </svg>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-dot rose"></div>
+        <h3>核心设计原则</h3>
+      </div>
+      <ul>
+        <li>• 分层解耦 — 感知/传输/数据/服务/应用 五层独立演进</li>
+        <li>• 事件驱动 — Kafka/RabbitMQ 削峰填谷，异步解耦</li>
+        <li>• 流式优先 — 视频/传感器/告警全流式处理</li>
+        <li>• 高可用架构 — 双机热备 &lt;30s 切换，99.5% 可用性</li>
+        <li>• 安全纵深 — 传输加密 · 统一认证 · RBAC · 审计全链路</li>
+        <li>• 国产兼容 — 天地图 GIS · GB/T 28181 国标 · CGCS2000</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-dot emerald"></div>
+        <h3>关键技术栈 (V2.0 Optimized)</h3>
+      </div>
+      <ul>
+        <li>• 前端: Vue3 (PC) / React+DataV (大屏) / Flutter (移动)</li>
+        <li>• 后端: Java/Spring Boot (业务) + Go (流媒体/IM) + Python (AI)</li>
+        <li>• 数据: PostgreSQL + TDengine + Redis + ES + MinIO</li>
+        <li>• AI: PyTorch → TensorRT/ONNX · NVIDIA Triton Server</li>
+        <li>• 流媒体: SRS/WVP · GB/T 28181 · RTSP · WebRTC</li>
+        <li>• 消息: Kafka + RabbitMQ + EMQX + Redis Pub/Sub</li>
+        <li>• 移除: VR 全景服务 (152-feature scope 不含)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-dot violet"></div>
+        <h3>性能指标 &amp; 规模</h3>
+      </div>
+      <ul>
+        <li>• 视频首屏加载 ≤3s · 告警端到端 ≤5s</li>
+        <li>• 无人机直播延迟 ≤2s · AI 分析 ≥25fps</li>
+        <li>• 并发: 50 PC + 100 移动端用户</li>
+        <li>• 录像 90 天 · 告警片段 180 天 · MinIO 纠删码 4+2</li>
+        <li>• 系统可用性 99.5% · 双机热备 &lt;30s 切换</li>
+        <li>• 12 个月 · 17 人团队 · 5 阶段 · 12 Sprint</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stat-row">
+    <div class="stat-item">
+      <div class="stat-value">152</div>
+      <div class="stat-label">Features</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">9</div>
+      <div class="stat-label">Microservices</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Architecture Layers</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">3</div>
+      <div class="stat-label">User Endpoints</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">99.5%</div>
+      <div class="stat-label">Availability</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">&lt;3s</div>
+      <div class="stat-label">Video Load Time</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>合阳洽川湿地智慧管理平台 · 技术架构白皮书 V2.0</span>
+    <span>2026-05-08</span>
+    <span>OPTIMIZED · 152 Features · 无VR模块</span>
+  </div>
+</div>
+</body>
+</html>

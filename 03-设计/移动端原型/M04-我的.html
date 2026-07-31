@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>我的 - 合阳洽川湿地智慧管理平台</title>
+<style>
+:root {
+  --bg: #f0f4f3;
+  --surface: #ffffff;
+  --primary: #1a936f;
+  --primary-dark: #147a5c;
+  --primary-light: rgba(26, 147, 111, 0.08);
+  --danger: #e74c3c;
+  --text: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --border: #e8eceb;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Roboto, sans-serif;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Profile header */
+.profile-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 24px 16px;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  color: #fff;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 700;
+  color: #fff;
+  margin: 0 auto 12px;
+  border: 3px solid rgba(255,255,255,0.3);
+}
+
+.profile-name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.profile-role { font-size: 13px; opacity: 0.9; }
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  background: var(--surface);
+  margin: 0 16px;
+  margin-top: -20px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  position: relative;
+  z-index: 2;
+}
+
+.stat-item {
+  padding: 16px 8px;
+  text-align: center;
+}
+.stat-item:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+  font-family: "SF Mono", monospace;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Section */
+.section { padding: 16px; }
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.menu-card {
+  background: var(--surface);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-bottom: 1px solid var(--border);
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:active { background: rgba(26,147,111,0.04); }
+
+.menu-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.menu-icon.primary { background: var(--primary-light); }
+.menu-icon.warn { background: var(--warning-light); }
+.menu-icon.info { background: var(--info-light); }
+
+.menu-body { flex: 1; min-width: 0; }
+.menu-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.menu-desc { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.menu-arrow {
+  font-size: 18px;
+  color: var(--text-tertiary);
+}
+
+/* Shift table modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-overlay.active { display: flex; }
+
+.modal-sheet {
+  background: var(--surface);
+  width: 100%;
+  max-height: 70vh;
+  border-radius: 20px 20px 0 0;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-close { font-size: 24px; color: var(--text-tertiary); cursor: pointer; }
+
+.shift-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.shift-table th {
+  text-align: left;
+  padding: 10px 8px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+.shift-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.shift-table tr:last-child td { border-bottom: none; }
+.shift-table .today { background: var(--primary-light); color: var(--primary); font-weight: 700; }
+
+/* Bottom tab */
+.bottom-tab {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: 6px;
+  z-index: 100;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+  min-width: 56px;
+}
+.tab-item.active { color: var(--primary); }
+.tab-icon { font-size: 24px; line-height: 1; }
+
+.tab-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  min-width: 18px; height: 18px;
+  border-radius: 9px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "SF Mono", monospace;
+  padding: 0 5px;
+}
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.m-toast-wrap { position:fixed; top:calc(16px + env(safe-area-inset-top)); left:16px; right:16px; z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.m-toast { padding:12px 16px; border-radius:10px; font-size:14px; font-weight:500; color:#fff; animation:mToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.m-toast.success { background:linear-gradient(135deg,#1a936f,#147a5c); }
+.m-toast.error { background:linear-gradient(135deg,#e74c3c,#c0392b); }
+.m-toast.info { background:linear-gradient(135deg,#3498db,#2980b9); }
+@keyframes mToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes mToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.m-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9998; display:none; align-items:center; justify-content:center; padding:16px; }
+.m-modal-overlay.active { display:flex; }
+.m-modal { background:#fff; border-radius:14px; padding:20px; width:100%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.15); }
+.m-modal-title { font-size:17px; font-weight:700; color:#1a1a1a; margin-bottom:10px; }
+.m-modal-body { font-size:14px; color:#666; line-height:1.6; margin-bottom:20px; }
+.m-modal-actions { display:flex; gap:10px; }
+.m-btn { flex:1; padding:13px 0; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; border:none; text-align:center; }
+.m-btn-primary { background:linear-gradient(135deg,#1a936f,#147a5c); color:#fff; }
+.m-btn-secondary { background:#f0f4f3; color:#666; }
+.m-sheet-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9998; display:none; align-items:flex-end; justify-content:center; }
+.m-sheet-overlay.active { display:flex; }
+.m-sheet { background:#fff; border-radius:16px 16px 0 0; padding:16px; width:100%; max-width:500px; transform:translateY(100%); transition:transform .3s ease; }
+.m-sheet-overlay.active .m-sheet { transform:translateY(0); }
+.m-sheet-title { font-size:16px; font-weight:700; color:#1a1a1a; text-align:center; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #e8eceb; }
+.m-sheet-item { padding:14px; text-align:center; font-size:15px; color:#1a1a1a; cursor:pointer; border-bottom:1px solid #f0f4f3; }
+.m-sheet-item:last-child { border-bottom:none; color:#e74c3c; font-weight:600; }
+.m-loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.m-loading-overlay.active { display:flex; }
+.m-loading-spinner { width:48px; height:48px; border:4px solid rgba(255,255,255,0.2); border-top-color:#fff; border-radius:50%; animation:mSpin 0.8s linear infinite; }
+.m-loading-text { color:#fff; font-size:15px; font-weight:600; }
+@keyframes mSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="mToastWrap" class="m-toast-wrap"></div>
+<div id="mModalOverlay" class="m-modal-overlay" onclick="if(event.target===this)closeMModal()"><div class="m-modal"><div id="mModalTitle" class="m-modal-title">提示</div><div id="mModalBody" class="m-modal-body">内容</div><div class="m-modal-actions"><button class="m-btn m-btn-secondary" onclick="closeMModal()">取消</button><button id="mModalConfirm" class="m-btn m-btn-primary">确认</button></div></div></div>
+<div id="mSheetOverlay" class="m-sheet-overlay" onclick="if(event.target===this)closeMSheet()"><div class="m-sheet"><div id="mSheetTitle" class="m-sheet-title">选择操作</div><div id="mSheetBody"></div></div></div>
+<div id="mLoadingOverlay" class="m-loading-overlay"><div class="m-loading-spinner"></div><div id="mLoadingText" class="m-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('mToastWrap');var t=document.createElement('div');t.className='m-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='mToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('mModalTitle').textContent=title||'提示';document.getElementById('mModalBody').textContent=body||'';var btn=document.getElementById('mModalConfirm');btn.onclick=function(){closeMModal();if(onConfirm)onConfirm();};document.getElementById('mModalOverlay').classList.add('active');}
+function closeMModal(){document.getElementById('mModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showActionSheet(title,items){document.getElementById('mSheetTitle').textContent=title||'选择操作';var b=document.getElementById('mSheetBody');b.innerHTML='';items.forEach(function(it){var d=document.createElement('div');d.className='m-sheet-item';d.textContent=it.text;d.onclick=function(){closeMSheet();if(it.action)it.action();};b.appendChild(d);});document.getElementById('mSheetOverlay').classList.add('active');}
+function closeMSheet(){document.getElementById('mSheetOverlay').classList.remove('active');}
+function showLoading(msg){document.getElementById('mLoadingText').textContent=msg||'加载中...';document.getElementById('mLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('mLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<!-- PROFILE HEADER -->
+<div class="profile-header">
+  <div class="profile-avatar">张</div>
+  <div class="profile-name">张三</div>
+  <div class="profile-role">东区巡逻队 · 小队长 · 工号 PT-2023-008</div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat-item">
+    <div class="stat-value">42</div>
+    <div class="stat-label">本月工单</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">12.5</div>
+    <div class="stat-label">平均响应(分)</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-value">98%</div>
+    <div class="stat-label">完成率</div>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="section">
+  <div class="section-title">功能菜单</div>
+  <div class="menu-card">
+    <div class="menu-item" onclick="openShiftModal()">
+      <div class="menu-icon primary">📋</div>
+      <div class="menu-body">
+        <div class="menu-title">班次管理</div>
+        <div class="menu-desc">今日早班 08:00-16:00 · 点击查看排班表</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="location.href='M04-01-工作量统计.html'">
+      <div class="menu-icon info">📊</div>
+      <div class="menu-body">
+        <div class="menu-title">工作量统计</div>
+        <div class="menu-desc">出勤天数 / 处置数 / 平均时长</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="location.href='M04-02-历史工单.html'">
+      <div class="menu-icon warn">📁</div>
+      <div class="menu-body">
+        <div class="menu-title">我的工单</div>
+        <div class="menu-desc">历史工单记录与详情</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+    <div class="menu-item" onclick="location.href='M04-03-设置.html'">
+      <div class="menu-icon primary">⚙️</div>
+      <div class="menu-body">
+        <div class="menu-title">设置</div>
+        <div class="menu-desc">消息通知 / 离线地图 / 修改密码</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="menu-card">
+    <div class="menu-item" onclick="location.href='M05-登录.html'">
+      <div class="menu-icon" style="background:rgba(231,76,60,0.1);">🚪</div>
+      <div class="menu-body">
+        <div class="menu-title" style="color:var(--danger);">退出登录</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+  </div>
+</div>
+
+<!-- SHIFT MODAL -->
+<div class="modal-overlay" id="shiftModal" onclick="closeShiftModal(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">本周排班表</span>
+      <span class="modal-close" onclick="closeShiftModal()">&times;</span>
+    </div>
+    <table class="shift-table">
+      <thead>
+        <tr><th>日期</th><th>班次</th><th>时间</th><th>责任区域</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="today">05-12 周一</td><td class="today">早班</td><td class="today">08:00-16:00</td><td class="today">东区核心区</td></tr>
+        <tr><td>05-13 周二</td><td>早班</td><td>08:00-16:00</td><td>东区核心区</td></tr>
+        <tr><td>05-14 周三</td><td>休息</td><td>--</td><td>--</td></tr>
+        <tr><td>05-15 周四</td><td>晚班</td><td>16:00-24:00</td><td>南区栈道</td></tr>
+        <tr><td>05-16 周五</td><td>晚班</td><td>16:00-24:00</td><td>南区栈道</td></tr>
+        <tr><td>05-17 周六</td><td>休息</td><td>--</td><td>--</td></tr>
+        <tr><td>05-18 周日</td><td>早班</td><td>08:00-16:00</td><td>东区核心区</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- BOTTOM TAB -->
+<nav class="bottom-tab">
+  <div class="tab-item" onclick="location.href='M01-首页.html'">
+    <span class="tab-icon">🏠</span>
+    <span>首页</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M03-工单.html'">
+    <span class="tab-icon">📋</span>
+    <span>工单</span>
+    <span class="tab-badge">3</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M07-视频.html'">
+    <span class="tab-icon">📹</span>
+    <span>视频</span>
+  </div>
+  <div class="tab-item" onclick="location.href='M02-消息.html'">
+    <span class="tab-icon">💬</span>
+    <span>消息</span>
+    <span class="tab-badge">2</span>
+  </div>
+  <div class="tab-item active">
+    <span class="tab-icon">👤</span>
+    <span>我的</span>
+  </div>
+</nav>
+
+<script>
+function openShiftModal() {
+  document.getElementById('shiftModal').classList.add('active');
+}
+function closeShiftModal(e) {
+  if (!e || e.target === document.getElementById('shiftModal')) {
+    document.getElementById('shiftModal').classList.remove('active');
+  }
+}
+</script>
+</body>
+</html>

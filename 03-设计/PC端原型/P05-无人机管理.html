@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>洽川湿地无人机管理</title>
+<style>
+:root {
+  --bg: #0A1628;
+  --bg-deep: #0A1628;
+  --panel-bg: rgba(15, 30, 55, 0.85);
+  --bg-card: rgba(15, 30, 55, 0.85);
+  --bg-card2: rgba(10, 28, 60, 0.6);
+  --header-bg: rgba(1, 30, 50, 0.95);
+  --accent: #00BFFF;
+  --accent-dim: rgba(0, 191, 255, 0.12);
+  --accent-glow: rgba(0, 191, 255, 0.25);
+  --accent-bright: #40a9ff;
+  --danger: #FF3366;
+  --danger-glow: rgba(255, 51, 102, 0.3);
+  --warning: #FFCC00;
+  --warn: #FFCC00;
+  --cyan: #00E5CC;
+  --green: #00CC99;
+  --info: #40a9ff;
+  --text: #FFFFFF;
+  --text2: #CCCCCC;
+  --text3: #8899AA;
+  --text-dim: #8899AA;
+  --border: rgba(0, 191, 255, 0.15);
+  --border-bright: rgba(0, 191, 255, 0.4);
+  --font-num: "DIN Pro", "SF Mono", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== TOP HEADER ===== */
+.top-bar {
+  position: relative;
+  height: 64px;
+  background: linear-gradient(180deg, rgba(10,22,40,0.98), rgba(10,22,40,0.85));
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 191, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 1000;
+}
+
+.top-bar::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 20%; right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.8;
+}
+
+.top-left { display:flex; align-items:center; gap:16px; }
+
+.top-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.top-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg,#fff,var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.top-title-sub {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.sys-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.time-box { text-align: right; }
+
+.time-clock {
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-bright);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.time-date {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* ===== MAIN LAYOUT ===== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+.main-row {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  gap: 8px;
+  padding: 8px;
+}
+
+.col-left {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.col-right {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.col-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ===== PANEL ===== */
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* L-shaped corners */
+.corner {
+  position: absolute;
+  width: 12px; height: 12px;
+  border-color: var(--accent);
+  border-style: solid;
+  pointer-events: none;
+  opacity: 0.6;
+}
+.corner-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.corner-tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+.corner-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+.corner-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 12px 14px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.panel-title::before {
+  content: '';
+  width: 3px; height: 12px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.panel-body {
+  padding: 10px 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.panel-body::-webkit-scrollbar { width: 4px; }
+.panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ===== AIRPORT STATUS ===== */
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,191,255,0.08);
+  font-size: 13px;
+}
+.status-row:last-child { border-bottom: none; }
+.status-label { color: var(--text-dim); }
+.status-value { color: var(--text); display: flex; align-items: center; gap: 6px; }
+
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+}
+.dot-green { background: var(--accent); color: var(--accent); }
+.dot-red { background: var(--danger); color: var(--danger); }
+.dot-orange { background: var(--warning); color: var(--warning); }
+
+.progress-track {
+  width: 100%; height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-bright));
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* ===== DRONE LIST ===== */
+.drone-item {
+  background: rgba(0,191,255,0.04);
+  border: 1px solid rgba(0,191,255,0.1);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-left: 3px solid var(--accent);
+}
+.drone-item:hover {
+  background: rgba(0,191,255,0.08);
+  border-color: var(--border-bright);
+}
+.drone-item:last-child { margin-bottom: 0; }
+.drone-item.danger { border-left-color: var(--danger); }
+.drone-item.warning { border-left-color: var(--warning); }
+
+.drone-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.drone-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.drone-battery {
+  font-size: 13px;
+  font-family: "SF Mono", monospace;
+  font-weight: 600;
+}
+.battery-high { color: var(--accent); }
+.battery-mid { color: var(--warning); }
+.battery-low { color: var(--danger); }
+
+.drone-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.signal-bars {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 10px;
+}
+.signal-bars span {
+  width: 3px;
+  background: var(--accent);
+  border-radius: 1px;
+  opacity: 0.3;
+}
+.signal-bars span.on { opacity: 1; box-shadow: 0 0 4px var(--accent); }
+.signal-bars span:nth-child(1){ height: 4px; }
+.signal-bars span:nth-child(2){ height: 5px; }
+.signal-bars span:nth-child(3){ height: 7px; }
+.signal-bars span:nth-child(4){ height: 9px; }
+.signal-bars.weak span { background: var(--warning); }
+.signal-bars.weak span.on { box-shadow: 0 0 4px var(--warning); }
+
+/* ===== ROUTE ===== */
+.route-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(0,191,255,0.04);
+  border-radius: 3px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.route-item:last-child { margin-bottom: 0; }
+.route-name { color: var(--text); }
+.route-actions { display: flex; gap: 6px; }
+
+.btn-sm {
+  padding: 3px 10px;
+  font-size: 11px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: rgba(0,191,255,0.08);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-sm:hover { background: rgba(0,191,255,0.18); border-color: var(--accent); }
+.btn-sm.green { border-color: rgba(0,191,255,0.3); background: rgba(0,191,255,0.12); }
+.btn-sm.green:hover { background: rgba(0,191,255,0.22); }
+
+/* ===== TASK ===== */
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  background: rgba(0,191,255,0.04);
+  border-radius: 3px;
+  margin-bottom: 6px;
+}
+.task-item:last-child { margin-bottom: 0; }
+.task-time {
+  font-size: 12px;
+  color: var(--warning);
+  font-family: "SF Mono", monospace;
+  margin-bottom: 2px;
+}
+.task-desc { font-size: 12px; color: var(--text); }
+.task-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0,191,255,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(0,191,255,0.2);
+}
+
+/* ===== QUICK OPS ===== */
+.quick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.quick-btn {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: rgba(0,191,255,0.08);
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.quick-btn:hover { background: rgba(0,191,255,0.18); border-color: var(--accent); }
+.quick-btn.danger {
+  background: rgba(255,77,79,0.08);
+  color: var(--danger);
+  border-color: rgba(255,77,79,0.2);
+}
+.quick-btn.danger:hover { background: rgba(255,77,79,0.18); border-color: var(--danger); }
+
+/* ===== BOTTOM NAVIGATION ===== */
+.bottom-nav {
+  height: 52px;
+  background: linear-gradient(180deg, transparent, #0A1628 30%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 12px;
+}
+
+.nav-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text3);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.25s;
+  min-width: 56px;
+  text-decoration: none;
+}
+
+.nav-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--border);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.nav-btn.active {
+  background: rgba(0, 191, 255, 0.1);
+  border-color: var(--border-bright);
+  color: var(--accent);
+}
+
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 30%; right: 30%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.nav-icon svg { width: 16px; height: 16px; display:block; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; transition: transform 0.25s; }
+.nav-btn:hover .nav-icon svg { transform: scale(1.12); }
+
+/* ===== IFRAME ===== */
+.dji-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #0d1117;
+}
+</style>
+<!-- === 弹窗组件 START === -->
+<style>
+.pc-toast-wrap { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+.pc-toast { padding:10px 24px; border-radius:6px; font-size:13px; font-weight:500; color:#fff; backdrop-filter:blur(8px); animation:pcToastIn 0.3s ease; pointer-events:auto; display:flex; align-items:center; gap:8px; box-shadow:0 4px 20px rgba(0,0,0,0.3); }
+.pc-toast.success { background:rgba(26,147,111,0.92); border:1px solid rgba(0,191,255,0.4); }
+.pc-toast.error { background:rgba(231,76,60,0.92); border:1px solid rgba(255,77,79,0.4); }
+.pc-toast.info { background:rgba(52,152,219,0.92); border:1px solid rgba(64,169,255,0.4); }
+@keyframes pcToastIn { from { opacity:0; transform:translateY(-20px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes pcToastOut { to { opacity:0; transform:translateY(-20px) scale(0.95); } }
+.pc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9998; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.pc-modal-overlay.active { display:flex; }
+.pc-modal { background:rgba(6,30,30,0.96); border:1px solid rgba(0,191,255,0.25); border-radius:10px; padding:24px; min-width:360px; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+.pc-modal-title { font-size:16px; font-weight:600; color:#00BFFF; margin-bottom:12px; }
+.pc-modal-body { font-size:14px; color:#e0f0f0; line-height:1.6; margin-bottom:20px; }
+.pc-modal-actions { display:flex; justify-content:flex-end; gap:10px; }
+.pc-btn { padding:8px 20px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:none; transition:all .15s; }
+.pc-btn:hover { opacity:.9; }
+.pc-btn-primary { background:linear-gradient(135deg,#00BFFF,#0088CC); color:#0A1628; }
+.pc-btn-secondary { background:rgba(0,191,255,0.08); color:#00BFFF; border:1px solid rgba(0,191,255,0.25); }
+.pc-loading-overlay { position:fixed; inset:0; background:rgba(10,22,40,0.7); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+.pc-loading-overlay.active { display:flex; }
+.pc-loading-spinner { width:48px; height:48px; border:3px solid rgba(0,191,255,0.15); border-top-color:#00BFFF; border-radius:50%; animation:pcSpin 0.8s linear infinite; }
+.pc-loading-text { color:#00BFFF; font-size:14px; }
+@keyframes pcSpin { to { transform:rotate(360deg); } }
+</style>
+<div id="pcToastWrap" class="pc-toast-wrap"></div>
+<div id="pcModalOverlay" class="pc-modal-overlay" onclick="if(event.target===this)closeModal()"><div class="pc-modal"><div id="pcModalTitle" class="pc-modal-title">提示</div><div id="pcModalBody" class="pc-modal-body">内容</div><div class="pc-modal-actions"><button class="pc-btn pc-btn-secondary" onclick="closeModal()">取消</button><button id="pcModalConfirm" class="pc-btn pc-btn-primary">确认</button></div></div></div>
+<div id="pcLoadingOverlay" class="pc-loading-overlay"><div class="pc-loading-spinner"></div><div id="pcLoadingText" class="pc-loading-text">加载中...</div></div>
+<script>
+function showToast(msg,type){var w=document.getElementById('pcToastWrap');var t=document.createElement('div');t.className='pc-toast '+(type||'success');t.innerHTML=msg;w.appendChild(t);setTimeout(function(){t.style.animation='pcToastOut 0.3s ease forwards';setTimeout(function(){t.remove()},300)},2700);}
+function showModal(title,body,onConfirm){document.getElementById('pcModalTitle').textContent=title||'提示';document.getElementById('pcModalBody').textContent=body||'';var btn=document.getElementById('pcModalConfirm');btn.onclick=function(){closeModal();if(onConfirm)onConfirm();};document.getElementById('pcModalOverlay').classList.add('active');}
+function closeModal(){document.getElementById('pcModalOverlay').classList.remove('active');}
+function showConfirm(title,body,onConfirm){showModal(title,body,onConfirm);}
+function showLoading(msg){document.getElementById('pcLoadingText').textContent=msg||'加载中...';document.getElementById('pcLoadingOverlay').classList.add('active');}
+function hideLoading(){document.getElementById('pcLoadingOverlay').classList.remove('active');}
+</script>
+<!-- === 弹窗组件 END === -->
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="top-left">
+    <span class="weather-icon">⭐</span>
+    <span class="weather-temp">26°C</span>
+    <span style="font-size:12px;color:var(--text-dim);">💧 62% · 🌬 东南风 3级 · 👁 12km</span>
+  </div>
+  <div class="top-center">
+    <div class="top-title">洽川湿地无人机管理</div>
+    <div class="top-title-sub">空中巡查 · 立体防控</div>
+  </div>
+  <div class="top-right">
+    <div class="sys-status">
+      <div class="status-dot"></div>
+      <span>系统运行正常</span>
+    </div>
+    <div class="time-box">
+      <div class="time-clock" id="clock">14:32:18</div>
+      <div class="time-date" id="date">2025年1月15日 星期三</div>
+    </div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="main-row">
+    <!-- LEFT: Airport / Drone Status -->
+    <div class="col-left">
+      <div class="panel" style="flex-shrink:0;">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="panel-title">机场状态</div>
+        <div class="panel-body">
+          <div class="status-row">
+            <span class="status-label">系统状态</span>
+            <span class="status-value"><span class="dot dot-green"></span>在线</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">舱门状态</span>
+            <span class="status-value"><span class="dot dot-green"></span>已关闭</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">充电进度</span>
+            <span class="status-value" style="color:var(--accent);font-family:monospace">87%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:87%"></div></div>
+          <div class="status-row" style="margin-top:6px;">
+            <span class="status-label">舱内温度</span>
+            <span class="status-value" style="font-family:monospace">28.5°C</span>
+          </div>
+          <div class="status-row">
+            <span class="status-label">备用电池</span>
+            <span class="status-value"><span class="dot dot-green"></span>就绪</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="flex:1; min-height:0;">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="panel-title">无人机状态</div>
+        <div class="panel-body">
+          <div class="drone-item">
+            <div class="drone-header">
+              <span class="drone-name">UAV-01 巡检机</span>
+              <span class="drone-battery battery-high">92%</span>
+            </div>
+            <div class="drone-meta">
+              <span>自动巡航</span>
+              <div class="signal-bars"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
+            </div>
+          </div>
+          <div class="drone-item warning">
+            <div class="drone-header">
+              <span class="drone-name">UAV-02 热成像</span>
+              <span class="drone-battery battery-mid">45%</span>
+            </div>
+            <div class="drone-meta">
+              <span>悬停待命</span>
+              <div class="signal-bars weak"><span class="on"></span><span class="on"></span><span></span><span></span></div>
+            </div>
+          </div>
+          <div class="drone-item danger">
+            <div class="drone-header">
+              <span class="drone-name">UAV-03 采样机</span>
+              <span class="drone-battery battery-low">18%</span>
+            </div>
+            <div class="drone-meta">
+              <span>低电返航中</span>
+              <div class="signal-bars"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div class="col-center">
+      <iframe class="dji-frame" id="djiFrame" sandbox="allow-scripts allow-same-origin" srcdoc='<div style="background:#0A1628;width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#00BFFF;font-family:sans-serif"><svg viewBox="0 0 100 100" width="60" height="60"><circle cx="50" cy="50" r="45" fill="none" stroke="#00BFFF" stroke-width="2" stroke-dasharray="10 5"><animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="4s" repeatCount="indefinite"/></circle><path d="M35 50 L45 60 L65 35" stroke="#00BFFF" stroke-width="3" fill="none" stroke-linecap="round"/></svg><div style="margin-top:16px;font-size:14px;opacity:0.7">无人机模拟器加载中...</div></div>'></iframe>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-right">
+      <div class="panel" style="flex-shrink:0;">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="panel-title">航线管理</div>
+        <div class="panel-body">
+          <div class="route-item">
+            <span class="route-name">日常巡逻 A 线</span>
+            <div class="route-actions">
+              <button class="btn-sm">编辑</button>
+              <button class="btn-sm">删除</button>
+              <button class="btn-sm green" admin-only>起飞</button>
+            </div>
+          </div>
+          <div class="route-item">
+            <span class="route-name">日常巡逻 B 线</span>
+            <div class="route-actions">
+              <button class="btn-sm">编辑</button>
+              <button class="btn-sm">删除</button>
+              <button class="btn-sm green" admin-only>起飞</button>
+            </div>
+          </div>
+          <div class="route-item">
+            <span class="route-name">烟火巡检专线</span>
+            <div class="route-actions">
+              <button class="btn-sm">编辑</button>
+              <button class="btn-sm">删除</button>
+              <button class="btn-sm green" admin-only>起飞</button>
+            </div>
+          </div>
+          <div class="route-item">
+            <span class="route-name">水质采样 C 区</span>
+            <div class="route-actions">
+              <button class="btn-sm">编辑</button>
+              <button class="btn-sm">删除</button>
+              <button class="btn-sm green" admin-only>起飞</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="flex-shrink:0;">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="panel-title">定时任务</div>
+        <div class="panel-body">
+          <div class="task-item" onclick="location.href='P05-01-无人机任务详情.html'">
+            <div>
+              <div class="task-time">08:00</div>
+              <div class="task-desc">每日自动起飞 — 巡逻A线</div>
+            </div>
+            <span class="task-badge">已启用</span>
+          </div>
+          <div class="task-item" onclick="location.href='P05-01-无人机任务详情.html'">
+            <div>
+              <div class="task-time">14:00</div>
+              <div class="task-desc">每日自动起飞 — 巡逻B线</div>
+            </div>
+            <span class="task-badge">已启用</span>
+          </div>
+          <div class="task-item" onclick="location.href='P05-01-无人机任务详情.html'">
+            <div>
+              <div class="task-time">20:00</div>
+              <div class="task-desc">夜间热成像巡检</div>
+            </div>
+            <span class="task-badge" style="background:rgba(255,170,64,0.12);color:var(--warning);border-color:rgba(255,170,64,0.2);">待启动</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="flex-shrink:0;">
+        <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+        <div class="panel-title">快捷操作</div>
+        <div class="panel-body">
+          <div class="quick-grid">
+            <button class="quick-btn admin-only">&#x1F680; 手动起飞</button>
+            <button class="quick-btn danger admin-only">&#x1F3E0; 一键返航</button>
+            <button class="quick-btn">&#x1F4F9; 直播画质</button>
+            <button class="quick-btn admin-only">&#x1F4F7; 拍照</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+<a class="nav-btn" href="P03-大屏GIS地图.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 2C7 2 3 6.5 3 12c0 2 .5 3.5 1.5 5L12 22l7.5-5c1-1.5 1.5-3 1.5-5 0-5.5-4-10-9-10z"/></svg></span>
+<span>GIS地图</span>
+</a>
+<a class="nav-btn" href="P04-视频监控.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="16" height="14" rx="2"/><polygon points="23,7 19,10 19,14 23,17"/></svg></span>
+<span>视频监控</span>
+</a>
+<a class="nav-btn active" href="P05-无人机管理.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L9 7l-4 1 3 2.5L7 15l5-3 5 3-1-4.5L19 8l-4-1z"/><line x1="12" y1="18" x2="12" y2="2"/></svg></span>
+<span>无人机</span>
+</a>
+<a class="nav-btn" href="P08-环境监测.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 8C15 5 9 5 7 8c-3 4 0 9 5 12 5-3 8-8 5-12z"/><line x1="12" y1="20" x2="12" y2="11"/></svg></span>
+<span>环境监测</span>
+</a>
+<a class="nav-btn" href="P06-告警中心.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+<span>告警中心</span>
+</a>
+<a class="nav-btn" href="P07-数据统计.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="8" rx="1"/><rect x="10" y="8" width="4" height="14" rx="1"/><rect x="17" y="4" width="4" height="18" rx="1"/></svg></span>
+<span>数据统计</span>
+</a>
+<a class="nav-btn" href="P09-应急管理.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.5 4 10.5 9 11 5-.5 9-5.5 9-11V7l-9-5z"/><line x1="12" y1="8" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/></svg></span>
+<span>应急管理</span>
+</a>
+<a class="nav-btn" href="P10-VR查看.html">
+<span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="8" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/><line x1="12" y1="9" x2="12" y2="15"/></svg></span>
+<span>VR查看</span>
+</a>
+</nav>
+
+<script>
+// Clock
+function updateClock() {
+  const now = new Date();
+  const timeStr = now.toTimeString().slice(0, 8);
+  const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  const dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日 ' + weekdays[now.getDay()];
+  document.getElementById('clock').textContent = timeStr;
+  document.getElementById('date').textContent = dateStr;
+}
+updateClock(); setInterval(updateClock, 1000);
+</script>
+
+<script>
+/* Build DJI Sim UI inside iframe via srcdoc */
+const djiHtml = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  width:100%;height:100vh;
+  background:#0d1117;
+  color:#c9d1d9;
+  font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+/* Top bar */
+.topbar{
+  height:40px;
+  background:#161b22;
+  border-bottom:1px solid #30363d;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;flex-shrink:0;
+}
+.topbar-left{display:flex;align-items:center;gap:10px;}
+.dji-logo{
+  font-size:13px;font-weight:700;color:#58a6ff;letter-spacing:1px;
+}
+.dji-sub{font-size:11px;color:#8b949e;margin-left:4px;}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:11px;color:#8b949e;}
+.status-pill{
+  padding:2px 8px;border-radius:10px;
+  background:rgba(0,191,255,0.12);color:#00BFFF;font-size:11px;
+  border:1px solid rgba(0,191,255,0.25);
+}
+
+/* Main workspace */
+.workspace{flex:1;display:flex;min-height:0;}
+
+/* Left telemetry */
+.telemetry{
+  width:200px;
+  background:#0d1117;
+  border-right:1px solid #30363d;
+  display:flex;flex-direction:column;
+  padding:10px;gap:10px;flex-shrink:0;
+}
+.tele-group{background:#161b22;border-radius:4px;padding:10px;border:1px solid #21262d;}
+.tele-label{font-size:10px;color:#8b949e;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.tele-value{font-size:22px;color:#58a6ff;font-family:"SF Mono",monospace;font-weight:600;}
+.tele-unit{font-size:11px;color:#8b949e;margin-left:2px;}
+.tele-row{display:flex;justify-content:space-between;font-size:12px;color:#c9d1d9;margin-top:6px;}
+
+/* Attitude indicator */
+.attitude-wrap{
+  width:140px;height:140px;margin:6px auto;
+  position:relative;
+}
+.attitude-bg{
+  width:100%;height:100%;border-radius:50%;
+  background:conic-gradient(#161b22 0deg 180deg,#1a2332 180deg 360deg);
+  border:2px solid #30363d;position:relative;overflow:hidden;
+}
+.attitude-horizon{
+  position:absolute;top:50%;left:0;right:0;height:1px;background:#58a6ff;transform:translateY(-2px);
+}
+.attitude-plane{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:40px;height:4px;background:#ff7b72;border-radius:2px;
+}
+.attitude-plane::before,.attitude-plane::after{
+  content:'';position:absolute;top:-6px;width:12px;height:12px;
+  border-top:3px solid #ff7b72;border-radius:50%;
+}
+.attitude-plane::before{left:-4px;transform:rotate(-30deg);}
+.attitude-plane::after{right:-4px;transform:rotate(30deg);}
+.attitude-deg{
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  font-size:10px;color:#8b949e;font-family:monospace;
+}
+
+/* Center map */
+.map-wrap{flex:1;position:relative;background:#0a0f18;}
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(88,166,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(88,166,255,0.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.map-label{
+  position:absolute;top:10px;left:10px;
+  font-size:11px;color:#8b949e;background:rgba(13,17,23,0.8);
+  padding:4px 10px;border-radius:3px;border:1px solid #30363d;
+}
+.map-controls{
+  position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:4px;
+}
+.map-btn{
+  width:28px;height:28px;border-radius:3px;border:1px solid #30363d;
+  background:#161b22;color:#c9d1d9;display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;
+}
+.map-btn:hover{background:#21262d;}
+
+/* Drone marker on map */
+.uav-marker{
+  position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);
+  width:24px;height:24px;z-index:5;
+}
+.uav-icon{
+  width:100%;height:100%;background:#58a6ff;border-radius:50%;
+  box-shadow:0 0 12px rgba(88,166,255,0.6),0 0 30px rgba(88,166,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;
+}
+.uav-ring{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:40px;height:40px;border:2px solid rgba(88,166,255,0.3);
+  border-radius:50%;animation:ringPulse 2s infinite;
+}
+@keyframes ringPulse{
+  0%{width:36px;height:36px;opacity:1;}
+  100%{width:70px;height:70px;opacity:0;}
+}
+.uav-track{
+  position:absolute;top:45%;left:35%;width:25%;height:2px;
+  background:linear-gradient(90deg,transparent,#58a6ff);
+  transform:rotate(-15deg);opacity:0.4;
+}
+
+/* Right FPV */
+.fpv-panel{
+  width:260px;background:#0d1117;border-left:1px solid #30363d;
+  display:flex;flex-direction:column;flex-shrink:0;
+}
+.fpv-header{
+  height:32px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 10px;border-bottom:1px solid #21262d;font-size:11px;color:#8b949e;
+}
+.rec-dot{
+  width:8px;height:8px;border-radius:50%;background:#ff7b72;
+  box-shadow:0 0 6px #ff7b72;animation:recBlink 1.2s infinite;
+  display:inline-block;margin-right:4px;
+}
+@keyframes recBlink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.fpv-screen{
+  flex:1;background:#000;position:relative;display:flex;
+  align-items:center;justify-content:center;
+}
+.fpv-screen::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,rgba(0,0,0,0.15) 2px,rgba(0,0,0,0.15) 4px
+  );pointer-events:none;z-index:2;
+}
+.fpv-no-signal{
+  color:#484f58;font-size:13px;letter-spacing:2px;
+}
+.fpv-hud{
+  position:absolute;inset:8px;border:1px solid rgba(88,166,255,0.15);
+  pointer-events:none;z-index:3;
+}
+.fpv-hud::before,.fpv-hud::after{
+  content:'';position:absolute;background:rgba(88,166,255,0.2);
+}
+.fpv-hud::before{top:50%;left:20%;right:20%;height:1px;}
+.fpv-hud::after{left:50%;top:20%;bottom:20%;width:1px;}
+.crosshair{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:20px;height:20px;z-index:3;
+}
+.crosshair::before,.crosshair::after{
+  content:'';position:absolute;background:rgba(255,123,114,0.6);
+}
+.crosshair::before{top:9px;left:0;width:20px;height:2px;}
+.crosshair::after{top:0;left:9px;width:2px;height:20px;}
+
+.fpv-meta{
+  padding:8px 10px;font-size:11px;color:#8b949e;
+  border-top:1px solid #21262d;
+}
+.fpv-meta-row{display:flex;justify-content:space-between;margin-bottom:4px;}
+
+/* Bottom status */
+.bottom-status{
+  height:32px;background:#161b22;border-top:1px solid #30363d;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;font-size:11px;color:#8b949e;flex-shrink:0;
+}
+.status-group{display:flex;align-items:center;gap:16px;}
+.status-item{display:flex;align-items:center;gap:4px;}
+.status-icon{width:6px;height:6px;border-radius:50%;background:#3fb950;}
+.status-icon.warn{background:#d29922;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="dji-logo">DJI PILOT 2</span>
+    <span class="dji-sub">大疆无人机管理平台 · 模拟集成</span>
+  </div>
+  <div class="topbar-right">
+    <span class="status-pill">RTK 固定解</span>
+    <span>合阳湿地机场</span>
+    <span>v2.1.8</span>
+  </div>
+</div>
+
+<div class="workspace">
+  <div class="telemetry">
+    <div class="tele-group">
+      <div class="tele-label">飞行高度</div>
+      <div><span class="tele-value">86.4</span><span class="tele-unit">m</span></div>
+      <div class="tele-row"><span>相对</span><span>42.1m</span></div>
+    </div>
+    <div class="tele-group">
+      <div class="tele-label">水平速度</div>
+      <div><span class="tele-value">12.3</span><span class="tele-unit">m/s</span></div>
+    </div>
+    <div class="tele-group">
+      <div class="tele-label">距离</div>
+      <div><span class="tele-value">1,240</span><span class="tele-unit">m</span></div>
+    </div>
+    <div class="tele-group">
+      <div class="tele-label">姿态</div>
+      <div class="attitude-wrap">
+        <div class="attitude-bg">
+          <div class="attitude-horizon"></div>
+          <div class="attitude-plane"></div>
+        </div>
+        <div class="attitude-deg">P:-2.1° R:0.8°</div>
+      </div>
+    </div>
+    <div class="tele-group">
+      <div class="tele-label">卫星数</div>
+      <div><span class="tele-value">18</span><span class="tele-unit">颗</span></div>
+      <div class="tele-row"><span>GPS</span><span style="color:#3fb950">强</span></div>
+    </div>
+  </div>
+
+  <div class="map-wrap">
+    <div class="grid-bg"></div>
+    <div class="map-label">合阳湿地 · 实时轨迹</div>
+    <div class="map-controls">
+      <button class="map-btn">+</button>
+      <button class="map-btn">&#x2212;</button>
+      <button class="map-btn">&#x25B6;</button>
+    </div>
+    <div class="uav-track"></div>
+    <div class="uav-marker">
+      <div class="uav-ring"></div>
+      <div class="uav-icon">&#x1F6F8;</div>
+    </div>
+  </div>
+
+  <div class="fpv-panel">
+    <div class="fpv-header">
+      <span><span class="rec-dot"></span>LIVE FPV</span>
+      <span>UAV-01</span>
+    </div>
+    <div class="fpv-screen">
+      <div class="fpv-hud"></div>
+      <div class="crosshair"></div>
+      <span class="fpv-no-signal">实时图传接入中...</span>
+    </div>
+    <div class="fpv-meta">
+      <div class="fpv-meta-row"><span>ISO 100</span><span>Shutter 1/500</span></span></div>
+      <div class="fpv-meta-row"><span>EV +0.3</span><span>WB 5600K</span></div>
+      <div class="fpv-meta-row"><span>码率 8Mbps</span><span>延迟 120ms</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-status">
+  <div class="status-group">
+    <div class="status-item"><span class="status-icon"></span>指南针正常</div>
+    <div class="status-item"><span class="status-icon"></span>IMU正常</div>
+    <div class="status-item"><span class="status-icon warn"></span>风速偏大</div>
+    <div class="status-item"><span class="status-icon"></span>避障开启</div>
+  </div>
+  <div>00:42:18</div>
+</div>
+
+<script>
+// 角色权限控制: 仅管理员可操作无人机
+(function(){
+  var role = localStorage.getItem('userRole') || 'user';
+  if (role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(function(el){
+      el.style.display = 'none';
+    });
+    // 显示无权限提示
+    var tip = document.createElement('div');
+    tip.style.cssText = 'position:fixed;top:80px;right:24px;z-index:9999;padding:10px 20px;background:rgba(255,77,79,0.12);border:1px solid rgba(255,77,79,0.3);color:#ff4d4f;border-radius:8px;font-size:13px;';
+    tip.textContent = '观看模式: 仅管理员可执行飞行操作';
+    document.body.appendChild(tip);
+    setTimeout(function(){ tip.style.opacity='0'; tip.style.transition='opacity 1s'; setTimeout(function(){tip.remove()},1000); }, 4000);
+  }
+})();
+<\/script>
+</body>
+</html>`;
+
+document.getElementById('djiFrame').srcdoc = djiHtml;
+</script>
+
+<script>
+// 角色权限控制: 仅管理员可操作无人机
+(function(){
+  var role = localStorage.getItem('userRole') || 'user';
+  if (role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(function(el){
+      el.style.display = 'none';
+    });
+    // 显示无权限提示
+    var tip = document.createElement('div');
+    tip.style.cssText = 'position:fixed;top:80px;right:24px;z-index:9999;padding:10px 20px;background:rgba(255,77,79,0.12);border:1px solid rgba(255,77,79,0.3);color:#ff4d4f;border-radius:8px;font-size:13px;';
+    tip.textContent = '观看模式: 仅管理员可执行飞行操作';
+    document.body.appendChild(tip);
+    setTimeout(function(){ tip.style.opacity='0'; tip.style.transition='opacity 1s'; setTimeout(function(){tip.remove()},1000); }, 4000);
+  }
+})();
+</script>
+</body>
+</html>
