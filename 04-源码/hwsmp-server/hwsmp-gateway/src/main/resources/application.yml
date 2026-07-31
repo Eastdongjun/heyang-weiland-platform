@@ -1,0 +1,43 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: hwsmp-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: hwsmp-user
+          uri: lb://hwsmp-user
+          predicates:
+            - Path=/api/v1/auth/**,/api/v1/users/**
+        - id: hwsmp-device
+          uri: lb://hwsmp-device
+          predicates:
+            - Path=/api/v1/devices/**
+        - id: hwsmp-alarm
+          uri: lb://hwsmp-alarm
+          predicates:
+            - Path=/api/v1/alarms/**
+        - id: hwsmp-workorder
+          uri: lb://hwsmp-workorder
+          predicates:
+            - Path=/api/v1/work-orders/**
+        - id: hwsmp-gis
+          uri: lb://hwsmp-gis
+          predicates:
+            - Path=/api/v1/gis/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+
+logging:
+  level:
+    com.hwsmp: debug
