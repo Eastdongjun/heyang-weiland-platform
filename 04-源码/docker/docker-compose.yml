@@ -1,0 +1,138 @@
+version: '3.8'
+
+services:
+  # ========== PostgreSQL 16 + PostGIS ==========
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: hwsmp-postgres
+    environment:
+      POSTGRES_DB: hwsmp
+      POSTGRES_USER: hwsmp
+      POSTGRES_PASSWORD: hwsmp_dev_2024
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hwsmp -d hwsmp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ========== Redis 7 ==========
+  redis:
+    image: redis:7.2-alpine
+    container_name: hwsmp-redis
+    command: redis-server --requirepass redis_dev_2024 --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_dev_2024", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ========== RabbitMQ 3.12 ==========
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: hwsmp-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: hwsmp
+      RABBITMQ_DEFAULT_PASS: rabbit_dev_2024
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # ========== MinIO 对象存储 ==========
+  minio:
+    image: minio/minio:latest
+    container_name: hwsmp-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: hwsmp_admin
+      MINIO_ROOT_PASSWORD: minio_dev_2024
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ========== EMQX MQTT Broker ==========
+  emqx:
+    image: emqx/emqx:5.7.0
+    container_name: hwsmp-emqx
+    environment:
+      EMQX_DASHBOARD__DEFAULT_USERNAME: admin
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: emqx_dev_2024
+    ports:
+      - "1883:1883"    # MQTT
+      - "8083:8083"    # WebSocket
+      - "18083:18083"  # Dashboard
+    volumes:
+      - emqx_data:/opt/emqx/data
+    healthcheck:
+      test: ["CMD", "emqx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ========== Nginx 反向代理 ==========
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: hwsmp-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # ========== TDengine 时序数据库 ==========
+  tdengine:
+    image: tdengine/tdengine:3.3.3.0
+    container_name: hwsmp-tdengine
+    environment:
+      TAOS_FQDN: localhost
+    ports:
+      - "6030:6030"   # REST
+      - "6041:6041"   # Native
+    volumes:
+      - tdengine_data:/var/lib/taos
+    healthcheck:
+      test: ["CMD", "taos", "-s", "show databases"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  minio_data:
+  emqx_data:
+  tdengine_data:
