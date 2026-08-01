@@ -167,14 +167,6 @@ const barData = [{h:'32%',l:'05-06'},{h:'48%',l:'05-07'},{h:'28%',l:'05-08'},{h:
 </template>
 
 <style scoped>
-:root {
-  --bg-deep:#0A1628;--bg-card:rgba(15,30,55,0.85);--bg-card2:rgba(10,28,60,0.6);--header-bg:rgba(10,25,50,0.95);
-  --accent:#00BFFF;--accent-dim:rgba(0,191,255,0.12);--accent-glow:rgba(0,191,255,0.25);
-  --accent-bright:#40a9ff;--cyan:#00E5CC;--danger:#FF3366;--danger-glow:rgba(255,51,102,0.3);
-  --warn:#FFCC00;--green:#00CC99;--text:#FFFFFF;--text2:#CCCCCC;--text3:#8899AA;
-  --border:rgba(0,191,255,0.15);--border-bright:rgba(0,191,255,0.3);
-  --font-num:"DIN Pro","SF Mono",monospace;--text-dim:#8899AA;--warning:#FFCC00;--info:#40a9ff;--info-glow:rgba(64,169,255,0.4);
-}
 * { margin:0;padding:0;box-sizing:border-box; }
 
 .top-bar { height:64px;background:linear-gradient(180deg,rgba(10,22,40,0.98),rgba(10,22,40,0.85));border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;flex-shrink:0;position:relative;z-index:100; }

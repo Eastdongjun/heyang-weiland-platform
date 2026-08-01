@@ -274,25 +274,6 @@ const chartBars: any = [{v:18,h:64},{v:22,h:79},{v:15,h:54},{v:28,h:100,danger:t
 </template>
 
 <style scoped>
-:root {
-  --bg-deep: #0A1628;
-  --bg-card: rgba(15, 30, 55, 0.85);
-  --bg-card2: rgba(10, 28, 60, 0.6);
-  --border: rgba(0, 191, 255, 0.15);
-  --border-bright: rgba(0, 191, 255, 0.3);
-  --accent: #00BFFF;
-  --accent-dim: rgba(0, 191, 255, 0.12);
-  --accent-glow: rgba(0, 191, 255, 0.25);
-  --cyan: #00E5CC;
-  --danger: #FF3366;
-  --danger-glow: rgba(255, 51, 102, 0.3);
-  --warn: #FFCC00;
-  --green: #00CC99;
-  --text: #FFFFFF;
-  --text2: #CCCCCC;
-  --text3: #8899AA;
-  --font-num: "DIN Pro", "SF Mono", monospace;
-}
 * { margin:0; padding:0; box-sizing:border-box; }
 
 .top-bar { height:64px; background:linear-gradient(180deg,rgba(10,22,40,0.98),rgba(10,22,40,0.85)); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; flex-shrink:0; position:relative; z-index:100; }
