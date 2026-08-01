@@ -1,0 +1,27 @@
+-- 工单管理 H2 DDL
+CREATE TABLE IF NOT EXISTS sys_work_order (
+    id VARCHAR(36) PRIMARY KEY,
+    order_no VARCHAR(30) NOT NULL UNIQUE,
+    title VARCHAR(200) NOT NULL,
+    priority INT DEFAULT 3,
+    order_status INT DEFAULT 0,
+    alarm_id VARCHAR(36),
+    content TEXT,
+    images TEXT,
+    longitude DECIMAL(12,8),
+    latitude DECIMAL(12,8),
+    location_text VARCHAR(200),
+    assignee_id BIGINT,
+    assignee_name VARCHAR(50),
+    assign_reason VARCHAR(500),
+    accepted_at TIMESTAMP,
+    process_result TEXT,
+    process_images TEXT,
+    audit_opinion VARCHAR(500),
+    auditor_id BIGINT,
+    audited_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_deleted INT DEFAULT 0
+);

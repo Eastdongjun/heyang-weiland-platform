@@ -1,0 +1,27 @@
+-- 告警管理 H2 DDL
+CREATE TABLE IF NOT EXISTS sys_alarm (
+    id VARCHAR(36) PRIMARY KEY,
+    alarm_source VARCHAR(50),
+    alarm_type VARCHAR(50),
+    alarm_level INT,
+    alarm_status VARCHAR(20) DEFAULT 'pending',
+    device_id BIGINT,
+    device_name VARCHAR(100),
+    longitude DECIMAL(12,8),
+    latitude DECIMAL(12,8),
+    location_text VARCHAR(200),
+    confidence DOUBLE,
+    snapshots TEXT,
+    video_clip_url VARCHAR(500),
+    weather_info VARCHAR(200),
+    description VARCHAR(500),
+    occurred_at TIMESTAMP,
+    confirmed_at TIMESTAMP,
+    confirmed_by BIGINT,
+    confirm_remark VARCHAR(500),
+    work_order_id VARCHAR(36),
+    ext_info TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_deleted INT DEFAULT 0
+);

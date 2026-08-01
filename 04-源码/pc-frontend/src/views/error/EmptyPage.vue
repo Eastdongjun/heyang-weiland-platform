@@ -1,0 +1,9 @@
+<template>
+  <div class="min-h-screen bg-[#0A1628] flex items-center justify-center" style="font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
+    <div class="text-center">
+      <div class="text-6xl opacity-20 mb-4">📭</div>
+      <div class="text-base text-[#8899AA] mb-2">暂无数据</div>
+      <div class="text-sm text-[#606060]">当前没有可显示的内容</div>
+    </div>
+  </div>
+</template>
