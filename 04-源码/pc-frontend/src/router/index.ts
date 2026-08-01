@@ -80,6 +80,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/monitor/replay',
+      name: 'MonitorReplay',
+      component: () => import('@/views/monitor/ReplayPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/uav/:id',
+      name: 'UavDetail',
+      component: () => import('@/views/monitor/UavDetailPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/env',
       name: 'Environment',
       component: () => import('@/views/monitor/EnvironmentPage.vue'),
@@ -110,6 +122,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/device/group',
+      name: 'DeviceGroup',
+      component: () => import('@/views/device/DeviceGroupPage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/device/maintenance',
+      name: 'DeviceMaintenance',
+      component: () => import('@/views/device/DeviceMaintenancePage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/user',
       name: 'User',
       component: () => import('@/views/user/UserPage.vue'),
@@ -131,6 +155,12 @@ const router = createRouter({
       path: '/patrol/attendance',
       name: 'Attendance',
       component: () => import('@/views/patrol/AttendancePage.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/patrol/attendance/:id',
+      name: 'AttendanceDetail',
+      component: () => import('@/views/patrol/AttendanceDetailPage.vue'),
       meta: { requiresAuth: true },
     },
     {

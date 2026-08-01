@@ -1,38 +1,31 @@
 <script setup lang="ts">
+import AdminLayout from '@/components/common/AdminLayout.vue'
 const logs = [
-  { id:1, user:'admin', action:'登录系统', target:'系统', ip:'192.168.1.100', time:'2026-08-01 10:30:15' },
-  { id:2, user:'admin', action:'确认告警', target:'AL-001 火警告警', ip:'192.168.1.100', time:'2026-08-01 10:35:22' },
-  { id:3, user:'zhangsan', action:'接单', target:'WO-001 巡检工单', ip:'10.0.0.55', time:'2026-08-01 10:50:08' },
-  { id:4, user:'admin', action:'修改设备', target:'CAM-003 参数调整', ip:'192.168.1.100', time:'2026-08-01 11:02:41' },
-  { id:5, user:'lisi', action:'提交处置', target:'WO-003 维修工单', ip:'10.0.0.88', time:'2026-08-01 11:15:33' },
+  { time:'2026-08-01 10:30:15', user:'赵六', ip:'192.168.1.100', type:'登录', action:'用户登录系统', result:'成功', tColor:'#1890ff' },
+  { time:'2026-08-01 10:35:22', user:'赵六', ip:'192.168.1.100', type:'修改', action:'修改工单 WO-20260801-002 状态', result:'成功', tColor:'#faad14' },
+  { time:'2026-08-01 10:50:08', user:'张三', ip:'10.0.0.55', type:'登录', action:'APP端登录', result:'成功', tColor:'#1890ff' },
+  { time:'2026-08-01 11:02:41', user:'赵六', ip:'192.168.1.100', type:'新增', action:'新增用户 钱七', result:'成功', tColor:'#52c41a' },
+  { time:'2026-08-01 11:15:33', user:'赵六', ip:'192.168.1.100', type:'删除', action:'删除设备 CAM-0105', result:'成功', tColor:'#ff4d4f' },
 ]
 </script>
 <template>
-  <div class="h-screen w-screen bg-[#0A1628] flex overflow-hidden" style="font-family:'PingFang SC','Microsoft YaHei','Helvetica Neue',sans-serif">
-    <aside class="w-[200px] shrink-0 bg-[#0F1D35] border-r border-[rgba(0,191,255,0.15)] p-4">
-      <div class="text-xs text-[#8899AA] font-semibold mb-3 tracking-[1px]">系统配置</div>
-      <nav class="space-y-0.5 text-sm">
-        <div class="text-[#8899AA] hover:text-[#E8EDF5] rounded px-2 py-1.5 cursor-pointer">⚙️ 系统参数</div>
-        <div class="text-[#00BFFF] bg-[rgba(0,191,255,0.08)] rounded px-2 py-1.5 cursor-pointer">📝 操作日志</div>
-      </nav>
-    </aside>
-    <div class="flex-1 flex flex-col min-w-0">
-      <header class="h-14 bg-[#0F1D35] border-b border-[rgba(0,191,255,0.15)] flex items-center justify-between px-6 shrink-0">
-        <h1 class="text-base font-semibold">操作日志</h1>
-        <div class="text-[10px] text-[#8899AA]">只追加 · 不可删除 · 保留≥1年</div>
-      </header>
-      <div class="flex-1 overflow-auto p-4">
-        <table class="w-full text-sm">
-          <thead><tr class="text-[#8899AA] text-left border-b border-[rgba(0,191,255,0.1)] text-xs"><th class="p-2 font-medium">时间</th><th class="p-2 font-medium">操作人</th><th class="p-2 font-medium">操作</th><th class="p-2 font-medium">操作对象</th><th class="p-2 font-medium">IP地址</th></tr></thead>
-          <tbody>
-            <tr v-for="l in logs" :key="l.id" class="border-b border-[rgba(0,191,255,0.05)] hover:bg-[rgba(0,191,255,0.04)]">
-              <td class="p-2 text-[#8899AA] font-mono text-xs">{{ l.time }}</td>
-              <td class="p-2 font-semibold">{{ l.user }}</td><td class="p-2">{{ l.action }}</td><td class="p-2">{{ l.target }}</td>
-              <td class="p-2 text-[#8899AA] font-mono text-xs">{{ l.ip }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+  <AdminLayout>
+    <div class="filter-bar">
+      <select class="filter-select"><option>全部类型</option><option>登录</option><option>新增</option><option>修改</option><option>删除</option></select>
+      <input class="filter-input" placeholder="搜索关键字..." />
+      <button class="btn-default">📥 导出</button>
     </div>
-  </div>
+    <div class="table-wrap">
+      <table class="w-full text-sm border-collapse"><thead><tr class="bg-[#e6f0ff]"><th class="p-3 text-left text-xs text-[#1890ff] font-medium">时间</th><th class="p-3 text-left text-xs text-[#1890ff] font-medium">用户</th><th class="p-3 text-left text-xs text-[#1890ff] font-medium">IP地址</th><th class="p-3 text-left text-xs text-[#1890ff] font-medium">操作类型</th><th class="p-3 text-left text-xs text-[#1890ff] font-medium">操作内容</th><th class="p-3 text-left text-xs text-[#1890ff] font-medium">结果</th></tr></thead>
+        <tbody><tr v-for="l in logs" :key="l.time" class="border-b border-[#f0f0f0] hover:bg-[#fafafa]"><td class="p-3 text-xs font-mono text-[#999]">{{ l.time }}</td><td class="p-3 font-semibold">{{ l.user }}</td><td class="p-3 text-xs font-mono text-[#999]">{{ l.ip }}</td><td class="p-3"><span class="px-2 py-0.5 rounded text-[11px] font-medium text-white" :style="{background:l.tColor}">{{ l.type }}</span></td><td class="p-3 text-xs">{{ l.action }}</td><td class="p-3"><span class="text-xs font-semibold text-[#52c41a]">✓ {{ l.result }}</span></td></tr></tbody></table>
+      <div class="p-3 text-right text-xs text-[#999]">共 156 条 &nbsp; 1 2 3 4</div>
+    </div>
+  </AdminLayout>
 </template>
+<style scoped>
+.filter-bar { display:flex; gap:8px; margin-bottom:12px; }
+.filter-select, .filter-input { height:32px; border:1px solid #d9d9d9; border-radius:4px; padding:0 8px; font-size:12px; outline:none; }
+.filter-input { width:180px; }
+.btn-default { height:32px; padding:0 12px; background:#fff; border:1px solid #d9d9d9; border-radius:4px; font-size:12px; cursor:pointer; margin-left:auto; }
+.table-wrap { background:#fff; border:1px solid #e8e8e8; border-radius:6px; overflow:hidden; }
+</style>
